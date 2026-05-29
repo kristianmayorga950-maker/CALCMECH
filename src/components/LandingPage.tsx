@@ -73,7 +73,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
           CALC<span className="text-orange-500">MECH</span>
         </span>
         <img
-          src="/uis-logo.png"
+          src={`${import.meta.env.BASE_URL}uis-logo.png`}
           alt="Universidad Industrial de Santander"
           className="h-12 sm:h-14 object-contain drop-shadow-lg"
         />
