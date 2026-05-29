@@ -1,0 +1,6 @@
+[
+  { "material": "steel",     "name": "Acero",           "E": 207, "A": 0.78715, "B": 0.62873 },
+  { "material": "aluminum",  "name": "Aluminio",        "E":  71, "A": 0.79670, "B": 0.63816 },
+  { "material": "copper",    "name": "Cobre",           "E": 119, "A": 0.79568, "B": 0.63553 },
+  { "material": "cast_iron", "name": "Hierro colado",   "E": 100, "A": 0.77871, "B": 0.61616 }
+]

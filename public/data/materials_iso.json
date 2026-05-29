@@ -1,0 +1,13 @@
+[
+  { "grade": "3.6",        "designation": "ISO 3.6",        "Sut": 330,  "Sy": 190,  "Sp": 180, "Se": 115, "E": 207, "sizeRange": "M1.6 – M36" },
+  { "grade": "4.6",        "designation": "ISO 4.6",        "Sut": 400,  "Sy": 240,  "Sp": 225, "Se": 140, "E": 207, "sizeRange": "M5 – M36" },
+  { "grade": "4.8",        "designation": "ISO 4.8",        "Sut": 420,  "Sy": 340,  "Sp": 310, "Se": 140, "E": 207, "sizeRange": "M1.6 – M16" },
+  { "grade": "5.6",        "designation": "ISO 5.6",        "Sut": 500,  "Sy": 300,  "Sp": 280, "Se": 155, "E": 207, "sizeRange": "M5 – M36" },
+  { "grade": "5.8",        "designation": "ISO 5.8",        "Sut": 520,  "Sy": 415,  "Sp": 380, "Se": 162, "E": 207, "sizeRange": "M5 – M24" },
+  { "grade": "6.8",        "designation": "ISO 6.8",        "Sut": 600,  "Sy": 480,  "Sp": 440, "Se": 174, "E": 207, "sizeRange": "M5 – M36" },
+  { "grade": "8.8 (≤M16)", "designation": "ISO 8.8 (≤M16)","Sut": 800,  "Sy": 640,  "Sp": 580, "Se": 183, "E": 207, "sizeRange": "M1.6 – M16" },
+  { "grade": "8.8 (>M16)", "designation": "ISO 8.8 (>M16)","Sut": 830,  "Sy": 660,  "Sp": 600, "Se": 186, "E": 207, "sizeRange": "M16 – M36" },
+  { "grade": "9.8",        "designation": "ISO 9.8",        "Sut": 900,  "Sy": 720,  "Sp": 650, "Se": 196, "E": 207, "sizeRange": "M1.6 – M16" },
+  { "grade": "10.9",       "designation": "ISO 10.9",       "Sut": 1040, "Sy": 940,  "Sp": 830, "Se": 214, "E": 207, "sizeRange": "M5 – M36" },
+  { "grade": "12.9",       "designation": "ISO 12.9",       "Sut": 1220, "Sy": 1100, "Sp": 970, "Se": 227, "E": 207, "sizeRange": "M1.6 – M36" }
+]

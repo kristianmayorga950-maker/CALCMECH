@@ -1,0 +1,8 @@
+[
+  { "condition": "non_plated_black",      "name": "Sin recubrir, acabado negro", "K": 0.30 },
+  { "condition": "zinc_plated",           "name": "Zincado",                      "K": 0.20 },
+  { "condition": "lubricated",            "name": "Lubricado",                    "K": 0.18 },
+  { "condition": "cadmium_plated",        "name": "Cadmiado",                     "K": 0.16 },
+  { "condition": "with_bowman_antiseize", "name": "Con antiagarrotante Bowman",   "K": 0.12 },
+  { "condition": "with_nuts_bowman",      "name": "Tuercas Bowman (Grafo-Plate)", "K": 0.09 }
+]

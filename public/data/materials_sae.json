@@ -1,0 +1,12 @@
+[
+  { "grade": "SAE 1",        "designation": "SAE 1",        "Sut": 414,  "Sy": 248,  "Sp": 227, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 1/2 in", "head": "—" },
+  { "grade": "SAE 2 (≤3/4)", "designation": "SAE 2 (≤3/4)","Sut": 510,  "Sy": 393,  "Sp": 379, "Se": 140, "E": 207, "sizeRange": "1/4 – 3/4 in",   "head": "—" },
+  { "grade": "SAE 2 (>3/4)", "designation": "SAE 2 (>3/4)","Sut": 414,  "Sy": 248,  "Sp": 227, "Se": 140, "E": 207, "sizeRange": "7/8 – 1 1/2 in", "head": "—" },
+  { "grade": "SAE 4",        "designation": "SAE 4",        "Sut": 793,  "Sy": 689,  "Sp": 448, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 1/2 in", "head": "—" },
+  { "grade": "SAE 5 (≤1\")", "designation": "SAE 5 (≤1\")", "Sut": 827,  "Sy": 634,  "Sp": 586, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 in",     "head": "3 líneas radiales" },
+  { "grade": "SAE 5 (>1\")", "designation": "SAE 5 (>1\")", "Sut": 724,  "Sy": 558,  "Sp": 510, "Se": 140, "E": 207, "sizeRange": "1 1/8 – 1 1/2 in", "head": "3 líneas radiales" },
+  { "grade": "SAE 5.2",      "designation": "SAE 5.2",      "Sut": 827,  "Sy": 634,  "Sp": 586, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 in",     "head": "3 líneas radiales" },
+  { "grade": "SAE 7",        "designation": "SAE 7",        "Sut": 917,  "Sy": 793,  "Sp": 724, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 1/2 in", "head": "5 líneas radiales" },
+  { "grade": "SAE 8",        "designation": "SAE 8",        "Sut": 1034, "Sy": 896,  "Sp": 827, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 1/2 in", "head": "6 líneas radiales" },
+  { "grade": "SAE 8.2",      "designation": "SAE 8.2",      "Sut": 1034, "Sy": 896,  "Sp": 827, "Se": 140, "E": 207, "sizeRange": "1/4 – 1 in",     "head": "6 líneas radiales" }
+]

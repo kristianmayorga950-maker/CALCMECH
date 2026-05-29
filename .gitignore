@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Claude Code internal folders
+.claude/
+.agents/
+skills/
+skills-lock.json
+
+# Build output
+dist/
+
+# Vite cache
+.vite/
+vite.config.ts.timestamp-*.mjs
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
