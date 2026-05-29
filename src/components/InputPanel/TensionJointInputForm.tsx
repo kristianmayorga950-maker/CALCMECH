@@ -283,7 +283,7 @@ export const TensionJointInputForm: React.FC = () => {
 
   const handleGrade = (designation: string) => {
     const list = gradeStd === 'iso' ? getAllISOClasses() : getAllSAEGrades();
-    const g = list.find(m => m.grade === designation);
+    const g = list.find(m => m.designation === designation);
     if (!g) return;
     updateInputs({ grade: { designation: g.designation, Sut: g.Sut, Sy: g.Sy, Sp: g.Sp, Se: g.Se, E: g.E, sizeRange: g.sizeRange, head: g.head } });
   };
@@ -395,7 +395,7 @@ export const TensionJointInputForm: React.FC = () => {
                 const sp  = gradeStressUnit === 'kpsi' ? `${(g.Sp  * 0.145038).toFixed(1)} kpsi` : `${g.Sp} MPa`;
                 const sy  = gradeStressUnit === 'kpsi' ? `${(g.Sy  * 0.145038).toFixed(1)} kpsi` : `${g.Sy} MPa`;
                 const sut = gradeStressUnit === 'kpsi' ? `${(g.Sut * 0.145038).toFixed(1)} kpsi` : `${g.Sut} MPa`;
-                return <option key={g.grade} value={g.grade}>{g.grade} — Sp {sp} / Sy {sy} / Sut {sut}</option>;
+                return <option key={g.grade} value={g.designation}>{g.grade} — Sp {sp} / Sy {sy} / Sut {sut}</option>;
               })}
             </select>
           </div>

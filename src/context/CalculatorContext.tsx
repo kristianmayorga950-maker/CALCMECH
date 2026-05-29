@@ -215,7 +215,7 @@ export const CalculatorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       .then(() => {
         dispatch({ type: 'TABLES_LOADED' });
         const iso = getAllISOClasses();
-        const g88 = iso.find(m => m.grade === '8.8') ?? iso[0];
+        const g88 = iso.find(m => m.grade.startsWith('8.8')) ?? iso[0];
         if (g88) dispatch({ type: 'UPDATE_TENSION', inputs: { grade: g88 } });
       })
       .catch(err => console.error('Error loading tables:', err));
