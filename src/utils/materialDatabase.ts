@@ -40,11 +40,12 @@ let matLoaded = false;
 
 export async function loadMaterialTables(): Promise<void> {
   if (matLoaded) return;
+  const BASE = import.meta.env.BASE_URL;   // '/' en dev, '/CALCMECH/' en producción
   const [sae, iso, wil, tf] = await Promise.all([
-    fetch('/data/materials_sae.json').then(r => r.json()),
-    fetch('/data/materials_iso.json').then(r => r.json()),
-    fetch('/data/member_constants.json').then(r => r.json()),
-    fetch('/data/torque_factors.json').then(r => r.json()),
+    fetch(`${BASE}data/materials_sae.json`).then(r => r.json()),
+    fetch(`${BASE}data/materials_iso.json`).then(r => r.json()),
+    fetch(`${BASE}data/member_constants.json`).then(r => r.json()),
+    fetch(`${BASE}data/torque_factors.json`).then(r => r.json()),
   ]);
   SAE_MATERIALS     = sae;
   ISO_MATERIALS     = iso;

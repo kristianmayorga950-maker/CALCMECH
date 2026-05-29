@@ -27,11 +27,12 @@ let loaded = false;
 
 export async function loadThreadTables(): Promise<void> {
   if (loaded) return;
+  const BASE = import.meta.env.BASE_URL;   // '/' en dev, '/CALCMECH/' en producción
   const [unc, unf, iso, acme] = await Promise.all([
-    fetch('/data/threads_unc.json').then(r => r.json()),
-    fetch('/data/threads_unf.json').then(r => r.json()),
-    fetch('/data/threads_iso.json').then(r => r.json()),
-    fetch('/data/threads_acme.json').then(r => r.json()),
+    fetch(`${BASE}data/threads_unc.json`).then(r => r.json()),
+    fetch(`${BASE}data/threads_unf.json`).then(r => r.json()),
+    fetch(`${BASE}data/threads_iso.json`).then(r => r.json()),
+    fetch(`${BASE}data/threads_acme.json`).then(r => r.json()),
   ]);
   UNC_THREADS  = unc;
   UNF_THREADS  = unf;
