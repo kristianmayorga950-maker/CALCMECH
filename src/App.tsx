@@ -5,6 +5,7 @@ import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import { LandingPage } from '@/components/LandingPage';
 import { InputPanel }   from '@/components/InputPanel';
 import { ResultsPanel } from '@/components/ResultsPanel';
+import { UserManual }   from '@/components/UserManual';
 
 // ── Tab metadata ──────────────────────────────────────────────────────────────
 const TABS: { id: ActiveTab; emoji: string; label: string; shortLabel: string; ref: string }[] = [
@@ -18,8 +19,9 @@ interface SidebarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   onGoHome: () => void;
+  onOpenManual: () => void;
 }
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome }) => (
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome, onOpenManual }) => (
   <aside className="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant z-50 hidden lg:flex flex-col">
     {/* Logo */}
     <div className="p-5 border-b border-outline-variant">
@@ -63,6 +65,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome }) =
 
     {/* Bottom */}
     <div className="p-3 border-t border-outline-variant space-y-0.5">
+      <button
+        onClick={onOpenManual}
+        className="w-full flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all"
+      >
+        <span className="text-sm">📖</span>
+        <span className="font-mono text-[10px] uppercase tracking-widest">Manual de uso</span>
+      </button>
       <button
         onClick={onGoHome}
         className="w-full flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all"
@@ -162,6 +171,7 @@ const TopBar: React.FC<TopBarProps> = ({
 // ── Main app ─────────────────────────────────────────────────────────────────
 const AppInner: React.FC = () => {
   const [view, setView] = useState<'home' | 'calculator'>('home');
+  const [manualOpen, setManualOpen] = useState(false);
   const { state, setActiveTab, setUnitSystem } = useCalculator();
   const isImperial = state.unitSystem === 'imperial';
 
@@ -170,16 +180,26 @@ const AppInner: React.FC = () => {
     setView('calculator');
   };
 
-  if (view === 'home') return <LandingPage onEnter={handleEnter} />;
+  if (view === 'home') {
+    return (
+      <>
+        <LandingPage onEnter={handleEnter} onOpenManual={() => setManualOpen(true)} />
+        <UserManual open={manualOpen} onClose={() => setManualOpen(false)} />
+      </>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface text-on-surface technical-grid animate-fade-in-up"
          style={{ animationDuration: '0.35s' }}>
 
+      <UserManual open={manualOpen} onClose={() => setManualOpen(false)} />
+
       <Sidebar
         activeTab={state.activeTab}
         onTabChange={setActiveTab}
         onGoHome={() => setView('home')}
+        onOpenManual={() => setManualOpen(true)}
       />
 
       {/* ── Content area ── */}

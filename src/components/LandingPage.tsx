@@ -41,9 +41,10 @@ const CARDS: {
 
 interface LandingPageProps {
   onEnter: (tab: 'power' | 'tension' | 'shear') => void;
+  onOpenManual: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onEnter, onOpenManual }) => {
   type CardTab = 'power' | 'tension' | 'shear';
   const [current, setCurrent] = useState(0);
 
@@ -72,11 +73,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
         <span className="font-hero text-2xl text-white tracking-widest select-none">
           CALC<span className="text-orange-500">MECH</span>
         </span>
-        <img
-          src={`${import.meta.env.BASE_URL}uis-logo.png`}
-          alt="Universidad Industrial de Santander"
-          className="h-12 sm:h-14 object-contain drop-shadow-lg"
-        />
+        <div className="flex items-center gap-4 sm:gap-6">
+          <button
+            onClick={onOpenManual}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-title text-white/90 border border-white/30 hover:border-orange-400 hover:text-orange-300 transition-colors backdrop-blur-sm"
+          >
+            <span>📖</span>
+            <span className="hidden sm:inline">Manual de uso</span>
+          </button>
+          <img
+            src={`${import.meta.env.BASE_URL}uis-logo.png`}
+            alt="Universidad Industrial de Santander"
+            className="h-12 sm:h-14 object-contain drop-shadow-lg"
+          />
+        </div>
       </nav>
 
       {/* ── Hero content ── */}
