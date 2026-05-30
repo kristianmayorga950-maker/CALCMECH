@@ -1,28 +1,26 @@
 import React, { useEffect } from 'react';
+import { CollapsibleSection } from '@/components/common/CollapsibleSection';
 
 interface UserManualProps {
   open: boolean;
   onClose: () => void;
 }
 
-const Section: React.FC<{ n: string; title: string; children: React.ReactNode }> = ({ n, title, children }) => (
-  <section className="mb-6">
-    <h3 className="text-base font-bold mb-2" style={{ color: 'var(--c-primary)' }}>
-      {n}. {title}
-    </h3>
-    <div className="text-sm leading-relaxed space-y-2" style={{ color: 'var(--c-text-muted)' }}>
-      {children}
-    </div>
-  </section>
-);
-
 const Li: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <li className="ml-4 list-disc">{children}</li>
 );
 
+/** Bloque "qué meter / resultados / consejo" reutilizable dentro de cada apartado. */
+const Field: React.FC<{ icon: string; label: string; children: React.ReactNode }> = ({ icon, label, children }) => (
+  <p>
+    <span className="font-semibold" style={{ color: 'var(--c-text)' }}>{icon} {label}: </span>
+    {children}
+  </p>
+);
+
 /**
- * Manual de uso integrado — se abre como modal sobre la app.
- * El contenido refleja docs/MANUAL_DE_USO.md.
+ * Manual de uso integrado — modal con cada indicación en una sección retráctil.
+ * Versión resumida de docs/MANUAL_DE_USO.md (misma esencia).
  */
 export const UserManual: React.FC<UserManualProps> = ({ open, onClose }) => {
   useEffect(() => {
@@ -33,6 +31,8 @@ export const UserManual: React.FC<UserManualProps> = ({ open, onClose }) => {
   }, [open, onClose]);
 
   if (!open) return null;
+
+  const txt = { color: 'var(--c-text-muted)' } as React.CSSProperties;
 
   return (
     <div
@@ -55,7 +55,7 @@ export const UserManual: React.FC<UserManualProps> = ({ open, onClose }) => {
               📖 Manual de uso — CALCMECH
             </h2>
             <p className="text-[11px]" style={{ color: 'var(--c-text-dim)' }}>
-              Calculadora de tornillos y juntas atornilladas · Shigley 9.ª ed.
+              Toca cada apartado para expandirlo · Shigley 9.ª ed.
             </p>
           </div>
           <button
@@ -68,87 +68,103 @@ export const UserManual: React.FC<UserManualProps> = ({ open, onClose }) => {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-5">
-          <Section n="1" title="¿Qué es CALCMECH?">
-            <p>Automatiza tres tipos de cálculo de elementos de sujeción. Todo se ejecuta en tu navegador (no se envía nada a un servidor).</p>
-            <ul className="space-y-1">
-              <Li><strong>Tornillo de potencia</strong> (§8-1, §8-2): torques, eficiencia, autobloqueo, Von Mises y esfuerzos del filete.</Li>
-              <Li><strong>Junta a tensión</strong> (§8-3 a §8-11): rigideces, constante C, precarga, factores de seguridad, par de apriete, fatiga y empaques.</Li>
-              <Li><strong>Junta a cortante</strong> (§8-12): cortante directo y excéntrico, aplastamiento y tensión en área neta.</Li>
-            </ul>
-          </Section>
+        {/* Body — cada apartado es retráctil */}
+        <div className="px-4 sm:px-6 py-5 space-y-2">
 
-          <Section n="2" title="Cómo empezar">
-            <ol className="space-y-1 ml-4 list-decimal">
-              <li>En la pantalla de inicio, elige una de las tres calculadoras.</li>
-              <li>Llena los <strong>datos de entrada</strong> (columna izquierda).</li>
-              <li>Presiona <strong>⚡ CALCULAR</strong>; los resultados aparecen a la derecha.</li>
-              <li>Usa el menú lateral para cambiar de calculadora o volver al inicio.</li>
-            </ol>
-          </Section>
+          <CollapsibleSection title="1. ¿Qué es CALCMECH?" defaultOpen>
+            <div className="text-sm leading-relaxed space-y-1.5" style={txt}>
+              <p>Automatiza tres cálculos de sujetadores. Todo corre en tu navegador (nada se envía a un servidor).</p>
+              <ul className="space-y-1">
+                <Li><strong>Tornillo de potencia</strong> (§8-1, §8-2)</Li>
+                <Li><strong>Junta a tensión</strong> (§8-3 a §8-11)</Li>
+                <Li><strong>Junta a cortante</strong> (§8-12)</Li>
+              </ul>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="3" title="Controles generales">
-            <ul className="space-y-1">
-              <Li><strong>Unidades (SI / Imperial):</strong> botón en la barra superior; convierte todo automáticamente.</Li>
-              <Li><strong>Tema claro / oscuro:</strong> botón ☀️ / 🌙 arriba a la derecha.</Li>
-              <Li><strong>Secciones plegables:</strong> contrae o expande cada bloque con el chevron ▾.</Li>
-              <Li><strong>Avisos:</strong> si falta un dato, un aviso flotante indica cuál.</Li>
-              <Li><strong>Tooltips ⓘ:</strong> muestran la fórmula o nota al pasar el cursor.</Li>
-            </ul>
-          </Section>
+          <CollapsibleSection title="2. Cómo empezar" defaultOpen={false}>
+            <div className="text-sm leading-relaxed" style={txt}>
+              <ol className="space-y-1 ml-4 list-decimal">
+                <li>Elige una calculadora en la pantalla de inicio.</li>
+                <li>Llena los datos de entrada (izquierda).</li>
+                <li>Presiona <strong>⚡ CALCULAR</strong>; los resultados salen a la derecha.</li>
+              </ol>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="4" title="Modo Manual vs. Diseño automático">
-            <p>Tornillo de potencia y Junta a cortante incluyen un selector arriba del formulario:</p>
-            <ul className="space-y-1">
-              <Li><strong>Cálculo manual:</strong> evalúa un caso concreto (una cuerda y un material que tú eliges).</Li>
-              <Li><strong>Diseño automático:</strong> barre muchas combinaciones (cuerda × material o perno × grado) y <strong>recomienda el tamaño más pequeño</strong> que cumple tu factor de seguridad objetivo, mostrando la tabla completa de candidatos.</Li>
-            </ul>
-          </Section>
+          <CollapsibleSection title="3. Controles generales" defaultOpen={false}>
+            <div className="text-sm leading-relaxed" style={txt}>
+              <ul className="space-y-1">
+                <Li><strong>SI / Imperial:</strong> convierte todo automáticamente.</Li>
+                <Li><strong>Tema ☀️ / 🌙</strong> y <strong>secciones plegables ▾</strong>.</Li>
+                <Li><strong>Avisos flotantes</strong> indican qué dato falta.</Li>
+                <Li><strong>Tooltips ⓘ</strong> muestran la fórmula.</Li>
+              </ul>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="5" title="Tornillo de potencia">
-            <p><strong>Entradas:</strong> geometría de la rosca (Acme/cuadrada, entradas, diámetro, paso), carga axial, fricción y collarín, y material opcional (Sy).</p>
-            <p><strong>Resultados:</strong> diámetros, avance, torques TR/TL/Tc, eficiencia, autobloqueo, Von Mises y esfuerzos del filete.</p>
-          </Section>
+          <CollapsibleSection title="4. Modo Manual vs. Diseño automático" defaultOpen={false}>
+            <div className="text-sm leading-relaxed space-y-1.5" style={txt}>
+              <Field icon="🔧" label="Manual">evalúa un caso (una cuerda y un material que tú eliges).</Field>
+              <Field icon="⚙️" label="Automático">barre muchas combinaciones y recomienda el <strong>menor tamaño</strong> que cumple tu factor de seguridad objetivo.</Field>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="6" title="Junta a tensión">
-            <p><strong>Entradas:</strong> geometría del perno, grado/clase, longitud de agarre, rigidez del paquete (Cornwell o Wileman), precarga y apriete, carga externa (estática o fatiga) y empaque opcional.</p>
-            <p style={{ color: 'var(--c-text)' }}>
-              ⚠ Elige primero el <strong>Sistema</strong> (ISO o SAE) y luego la <strong>Clase/Grado</strong>. Si cambias de sistema, vuelve a seleccionar la clase.
-            </p>
-            <p><strong>Resultados:</strong> rigideces, constante C, precarga, factores np/n0/ny (y nf en fatiga), par de apriete y resultados del empaque.</p>
-          </Section>
+          <CollapsibleSection title="5. Tornillo de potencia" defaultOpen={false}>
+            <div className="text-sm leading-relaxed space-y-1.5" style={txt}>
+              <Field icon="📥" label="Qué meter">geometría de la rosca, carga axial, fricción/collarín y material opcional.</Field>
+              <Field icon="📤" label="Resultados">torques TR/TL/Tc, eficiencia, autobloqueo, Von Mises y esfuerzos del filete.</Field>
+              <Field icon="💡" label="Consejo">si la eficiencia es crítica, prefiere rosca cuadrada; revisa el autobloqueo.</Field>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="7" title="Junta a cortante">
-            <p><strong>Entradas:</strong> patrón de pernos (coordenadas), datos del perno (diámetro, área, cortante simple/doble, grado), carga V y su punto de aplicación, y propiedades de la placa.</p>
-            <p><strong>Resultados:</strong> centroide, momento, perno más cargado, factores por cortante/aplastamiento/área neta y criterio gobernante.</p>
-          </Section>
+          <CollapsibleSection title="6. Junta a tensión" defaultOpen={false}>
+            <div className="text-sm leading-relaxed space-y-1.5" style={txt}>
+              <Field icon="📥" label="Qué meter">perno, grado/clase, agarre, rigidez (Cornwell/Wileman), precarga y carga (estática o fatiga).</Field>
+              <Field icon="📤" label="Resultados">rigideces, constante C, precarga, factores np/n0/ny (y nf), par de apriete.</Field>
+              <Field icon="💡" label="Consejo">elige primero el <strong>Sistema</strong> (ISO o SAE) y luego la <strong>Clase</strong>. Si cambias de sistema, reselecciona.</Field>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="8" title="Cómo leer los resultados">
-            <ul className="space-y-1">
-              <Li><strong>Veredicto:</strong> factor de seguridad gobernante y validez del diseño.</Li>
-              <Li><strong>Parámetros confirmados:</strong> los valores realmente usados.</Li>
-              <Li><strong>Desarrollo de cálculos:</strong> cada parámetro con su fórmula y valor.</Li>
-              <Li><strong>Tabla de diseño iterativo:</strong> candidatos ordenados; el recomendado va con ★.</Li>
-              <Li><strong>Dashboard y PDF:</strong> gráficos interactivos y exportación a PDF.</Li>
-            </ul>
-          </Section>
+          <CollapsibleSection title="7. Junta a cortante" defaultOpen={false}>
+            <div className="text-sm leading-relaxed space-y-1.5" style={txt}>
+              <Field icon="📥" label="Qué meter">patrón de pernos, datos del perno, carga V y su punto de aplicación, y la placa.</Field>
+              <Field icon="📤" label="Resultados">centroide, momento, perno más cargado y factores por cortante/aplastamiento/área neta.</Field>
+              <Field icon="💡" label="Consejo">centra el patrón sobre la línea de acción de V para anular el momento.</Field>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="9" title="Consejos">
-            <ul className="space-y-1">
-              <Li>Usa <strong>punto (.)</strong> como separador decimal, no coma.</Li>
-              <Li>En modo automático, el <strong>factor de seguridad objetivo</strong> define la recomendación.</Li>
-              <Li>Las advertencias (p. ej. "no autobloqueante") son informativas; no detienen el cálculo.</Li>
-            </ul>
-          </Section>
+          <CollapsibleSection title="8. Cómo leer los resultados" defaultOpen={false}>
+            <div className="text-sm leading-relaxed" style={txt}>
+              <ul className="space-y-1">
+                <Li><strong>Veredicto:</strong> factor gobernante y validez.</Li>
+                <Li><strong>Desarrollo de cálculos:</strong> fórmula y valor de cada parámetro.</Li>
+                <Li><strong>Tabla iterativa:</strong> candidatos; el recomendado va con ★.</Li>
+                <Li><strong>Dashboard y PDF:</strong> gráficos y exportación.</Li>
+              </ul>
+            </div>
+          </CollapsibleSection>
 
-          <Section n="10" title="Referencias">
-            <ol className="space-y-1 ml-4 list-decimal">
-              <li>Budynas, R. G. &amp; Nisbett, J. K. <em>Diseño en Ingeniería Mecánica de Shigley</em>, 9.ª ed. McGraw-Hill, 2012. — §8.</li>
-              <li>Norton, R. L. <em>Diseño de Máquinas: Un Enfoque Integrado</em>, 4.ª ed. Pearson, 2011. — §11, §11.8.</li>
-              <li>Mott, R. L. <em>Diseño de Elementos de Máquinas</em>, 4.ª ed. Pearson. — Unidades y esfuerzos admisibles.</li>
-            </ol>
-          </Section>
+          <CollapsibleSection title="9. Consejos generales" defaultOpen={false}>
+            <div className="text-sm leading-relaxed" style={txt}>
+              <ul className="space-y-1">
+                <Li>Usa <strong>punto (.)</strong> como separador decimal.</Li>
+                <Li>En modo automático, el <strong>factor objetivo</strong> define la recomendación.</Li>
+                <Li>Las advertencias son informativas; no detienen el cálculo.</Li>
+              </ul>
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title="10. Referencias" defaultOpen={false}>
+            <div className="text-sm leading-relaxed" style={txt}>
+              <ol className="space-y-1 ml-4 list-decimal">
+                <li>Budynas &amp; Nisbett. <em>Diseño en Ingeniería Mecánica de Shigley</em>, 9.ª ed. — §8.</li>
+                <li>Norton. <em>Diseño de Máquinas</em>, 4.ª ed. — §11, §11.8.</li>
+                <li>Mott. <em>Diseño de Elementos de Máquinas</em>, 4.ª ed. — unidades y admisibles.</li>
+              </ol>
+            </div>
+          </CollapsibleSection>
+
         </div>
       </div>
     </div>
