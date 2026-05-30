@@ -50,18 +50,36 @@ export const UserManual: React.FC<UserManualProps> = ({ open, onClose }) => {
           className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b"
           style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)' }}
         >
-          <div>
+          <div className="min-w-0">
             <h2 className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>
               📖 Manual de uso — CALCMECH
             </h2>
             <p className="text-[11px]" style={{ color: 'var(--c-text-dim)' }}>
               Toca cada apartado para expandirlo · Shigley 9.ª ed.
             </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <a
+                href={`${import.meta.env.BASE_URL}Manual_de_Usuario_CALCMECH.pdf`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors"
+                style={{ background: 'var(--c-primary)', color: 'var(--c-on-primary)' }}
+              >
+                ⬇ Manual completo (PDF)
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}Capacidades_CALCMECH.pdf`}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
+                style={{ borderColor: 'var(--c-border)', color: 'var(--c-text-muted)' }}
+              >
+                ⬇ Capacidades (PDF)
+              </a>
+            </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Cerrar manual"
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-lg transition-colors"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-lg transition-colors self-start"
             style={{ color: 'var(--c-text-muted)' }}
           >
             ✕
