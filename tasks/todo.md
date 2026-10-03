@@ -79,3 +79,9 @@ Alcance: SOLO la sección de tornillo de potencia. Modelos: Opus 5.5 y Sonnet 5.
 - [x] Barra superior como cajetín y barra lateral como lista de piezas; View Transitions con flushSync (pieza-N y cajetín compartidos), sin animación con reducir movimiento
 - [x] Borrados: LandingPage.tsx (carrusel Unsplash), Header.tsx (sin uso) y su CSS (.slide-image, .hero-overlay, .calc-card, .accent-bar); título de pestaña «CALCMECH · Elementos roscados»
 - [x] Verificado: claro/oscuro, 375 px sin desborde, teclado (Enter sobre una pieza), Tensión y Cortante calculan igual, consola limpia; 259 pruebas, build OK
+
+## Del plano al cálculo — paso 4 (hecho, 2026-10-03)
+- [x] Manual en la app (UserManual.tsx): portada, controles, tornillo nuevo (configurar, cálculo progresivo, qué obtienes, proyectos y autoguardado), diseño automático solo en cortante; sin emojis (lucide)
+- [x] docs/MANUAL_DE_USO.md y docs/CONTENIDO_APP.md reescritos
+- [x] docs/build_pdfs.py con tildes, contenido nuevo y URL real; PDF regenerados (manual 8 pág., capacidades 4) y revisados como imagen
+- [x] CLAUDE.md: arquitectura actual (feature del tornillo, portada, transiciones, autoguardado, pruebas, documentos)

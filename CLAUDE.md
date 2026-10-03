@@ -14,57 +14,71 @@ npm run test:watch # Run tests in watch mode
 
 Run a single test file:
 ```bash
-npx vitest run tests/unit/powerScrew.test.ts
+npx vitest run tests/unit/powerScrewEngine/solver.test.ts
 ```
+
+Run the whole suite with `npx vitest run --dir tests` (plain `npx vitest run` also picks up copies inside `.claude/worktrees/`).
 
 ## Architecture
 
-Single-page React 18 + TypeScript app. All calculations are offloaded to a **Web Worker** (`src/workers/calculations.worker.ts`) to keep the UI responsive.
+Single-page React 18 + TypeScript app with three calculators ("pieces" 1–3 of the landing's assembly drawing):
 
-### Data flow
+| Piece | Tab id | Where | How it computes |
+|---|---|---|---|
+| 1 Tornillo de potencia | `power` | `src/features/powerScrew/` (self-contained feature) | Live, on the main thread, via a progressive rule engine (no "Calcular" button) |
+| 2 Pernos a tensión | `tension` | `src/modules/tensionJoint/` + `components/InputPanel`/`ResultsPanel` | "Calcular" → Web Worker |
+| 3 Pernos a cortante | `shear` | `src/modules/shearJoint/` + same panels | "Calcular" → Web Worker (manual or design sweep) |
 
-1. User fills a form → `InputPanel` dispatches `UPDATE_*` action to `CalculatorContext`
-2. User clicks "Calcular" → `calculate()` posts a message to the Worker
-3. Worker instantiates the relevant calculator class and calls `.calculate()`
-4. Worker posts results back → Context dispatches `SET_RESULTS` → `ResultsPanel` re-renders
+### App shell (`src/App.tsx`) and landing (`src/components/landing/`)
 
-**Design sweep ("Diseño automático") flow:** when `autoMode[tab]` is on (power/shear only), `calculate()` posts a `*_SWEEP` message instead. The worker calls the pure sweep function (`sweepPowerScrew` / `sweepShearJoint`), which loops the existing calculator over many thread × material/grade combos and ranks candidates. The worker has no loaded tables, so the context passes the resolved table arrays inside the payload. The response carries `kind: 'sweep'` → Context dispatches `SET_SWEEP` → `ResultsPanel` renders `DesignSweepTable`.
+- `view: 'home' | 'calculator'`. Home renders `Landing`: an SVG assembly drawing of a screw jack (`assembly.ts`, pure string; parts are `.part[data-part]` groups handled by event delegation), the parts list (`parts.ts` is the single source of names/order for landing **and** sidebar), the title block (cajetín), "Continuar" (power-screw autosaved session) and saved projects with thumbnails.
+- In calculator view the top bar is drawn as a cajetín and the sidebar as the parts list (collapsible, `fc-sidebar-collapsed` in localStorage).
+- Landing ↔ calculator uses the View Transitions API: `withTransition()` wraps the state change in `document.startViewTransition(() => flushSync(update))`; shared `view-transition-name`s are `pieza-N` (BOM row ↔ sidebar item) and `cajetin`. Falls back to an instant change without the API or with `prefers-reduced-motion`.
+- Opening a saved project from the landing writes it into the session slot (with its `projectId`) and enters `power`; the workspace restores from the session.
 
-### State management
+### Power screw feature (`src/features/powerScrew/`)
 
-`CalculatorContext` (`src/context/CalculatorContext.tsx`) is the single source of truth. It uses `useReducer` with a flat `CalculatorState` that holds inputs, results, and validation errors for all three tabs simultaneously. Tab switching does not reset inputs or results. It also holds `autoMode` (per-tab design-sweep toggle), `sweepOptions` (shear standard + area mode), and the `powerSweep`/`shearSweep` results.
+- `engine/` — pure TS, no React. `solve(ENGINE, cfg, entered, { extras })` runs a rule graph (`rules/*.ts`: geometry, torque/transmission, stress/buckling/wear/kinematics) to a fixed point over whatever inputs exist, choosing among alternative rules, and returns `values` (base units: mm, N, N·mm, MPa, rad), `steps` (general LaTeX → substitution → result), `pending`/`blocked` with reasons, `checks` (`checks.ts`) and `suggestions` (next most useful input). `sizing.ts` sweeps the Acme catalog; `summary.ts` computes utilization/verdict; `interpret.ts` the chart explanations. Table-sourced hidden inputs (`fMin`, `fcStart`, `nutCode`) come from `tableExtras()`.
+- `data/tables.ts` — Acme ½–2 in, AISI 1010–1095 steels, thread/collar friction, bearing pressure, end conditions, nut load shares.
+- `state/` — `problemState.ts` reducer (config, values with per-field units, table selections), `usePowerScrew.ts` (live `solve` + sizing), `persistence.ts` (validated serialize/parse, project library in localStorage, Markdown report), `session.ts` (autosave slot `calcmech-power-screw:session`, 0.5 s debounce + flush on unmount/`pagehide`; empty state clears it; carries `exampleId`/`projectId`).
+- `ui/` — `PowerScrewWorkspace` (rail · trace · checks ledger), `schematic/` (`schematic.ts` parametric SVG of the chosen system as a string, `fromState.ts` state → drawing input and project snapshot, `SystemSchematic`/`ProjectThumbnail`), charts, `ProjectMenu`. Styles are scoped under `.ps-root` in `powerScrew.css`.
+- Docs: `docs/power-screw/{METODOLOGIA,ARQUITECTURA,README}.md`.
 
-**Default state invariant:** `defaultState` must include all required fields for every calculator. Missing fields cause the worker to throw when the user clicks "Calcular" without touching the form. The `tensionInputs` default includes a full Cornwell `cornwellPlates` array; the default `grade` is set after tables load via `dispatch({ type: 'UPDATE_TENSION', inputs: { grade: g88 } })`.
+### Joints data flow (tension / shear)
 
-### Calculation modules (`src/modules/`)
+1. User fills a form → `InputPanel` dispatches `UPDATE_*` to `CalculatorContext`
+2. "Calcular" → `calculate()` posts a message to the Worker (`src/workers/calculations.worker.ts`)
+3. Worker runs the `*Calculator` class → posts results → `SET_RESULTS` → `ResultsPanel`
 
-Each module is pure TypeScript (no React), structured as:
-- `types.ts` — input/output interfaces
-- `calculations.ts` — the `*Calculator` class plus exported pure functions used in tests
-- `validation.ts` — field-level validation returning `{ field, message, severity }` arrays
-- `design.ts` — *(powerScrew & shearJoint only)* the iterative-design sweep layer
+**Design sweep (shear only):** with `autoMode.shear` on, `calculate()` posts `SHEAR_JOINT_SWEEP`; the worker calls the pure `sweepShearJoint(base, threads, grades, targetN, areaMode)` (`src/modules/shearJoint/design.ts`), which reuses the calculator over bolt × grade, sorts by diameter and marks the smallest viable as `recommendedKey`. Tables travel in the payload (the worker has none loaded). Response `kind: 'sweep'` → `SET_SWEEP` → `DesignSweepTable`.
 
-The three modules are:
-- `powerScrew` — ACME/square thread power screws (§8-1/§8-2): torques, efficiency, self-locking, Von Mises body stress, thread bearing/bending/shear
-- `tensionJoint` — bolted joints in tension (§8-3 – §8-11): stiffness (Cornwell/Wileman), preload, Goodman fatigue, torque de apriete, optional gasket
-- `shearJoint` — bolt groups in direct and eccentric shear (§8-12): bolt shear, plate bearing, net-area tension
+### State management (joints)
 
-**Design sweep (`design.ts`):** `sweepPowerScrew(base, threads, materials, targetN)` and `sweepShearJoint(base, threads, grades, targetN, areaMode)` are pure functions that reuse the `*Calculator` classes unchanged — they iterate the cartesian product (power: thread × material; shear: bolt × grade), compute each governing safety factor, sort candidates by diameter, and mark the **smallest viable** (`n >= targetN`) as `recommendedKey`. Tables are passed as arrays (not fetched) so the functions stay pure and run inside the worker. Tested in `tests/unit/{powerScrew,shearJoint}Design.test.ts`.
+`CalculatorContext` holds `activeTab`, `unitSystem`, tension/shear inputs and results, `autoMode` (shear), `sweepOptions` and `shearSweep`. The power screw keeps its own state (above); it only reads `unitSystem`.
+
+**Default state invariant:** `defaultState` must include all required fields for each joint calculator, or the worker throws when "Calcular" is pressed on an untouched form. `tensionInputs` includes a full Cornwell `cornwellPlates` array; the default `grade` is set after tables load via `dispatch({ type: 'UPDATE_TENSION', inputs: { grade: g88 } })`.
+
+### Joint modules (`src/modules/`)
+
+Pure TypeScript: `types.ts`, `calculations.ts` (`*Calculator` + exported pure functions), `validation.ts`, and `design.ts` (shear only).
+- `tensionJoint` — §8-3 – §8-11: stiffness (Cornwell/Wileman), preload, fatigue, tightening torque, optional gasket
+- `shearJoint` — §8-12: bolt shear, plate bearing, net-area tension
 
 ### Reference data (`public/data/`)
 
-Thread and material tables are loaded at app startup via `loadThreadTables()` and `loadMaterialTables()` (singleton pattern, fetch from `/data/*.json`). The data is module-level singletons in `src/utils/threadTables.ts` and `src/utils/materialDatabase.ts`. Tests that exercise the full flow need these tables pre-loaded.
+Joint thread/material tables load at startup via `loadThreadTables()` / `loadMaterialTables()` (singletons in `src/utils/threadTables.ts`, `src/utils/materialDatabase.ts`), fetched with `import.meta.env.BASE_URL`. The power screw's tables are TypeScript (`features/powerScrew/data/tables.ts`).
 
 ### UI rendering dependencies
 
-- **Formulas** — rendered with KaTeX via `FormulaDisplay` (`src/components/common/FormulaDisplay.tsx`). Formula strings in `calculations` result maps use LaTeX syntax.
-- **Charts** — Recharts is used in `StressChart` for graphing stress distributions.
-- **PDF export** — `@react-pdf/renderer` is used in `ExportButtons`.
-- **Animations** — `ScrollReveal` wraps result sections; entrance animations are CSS-only (`animate-fade-in-up`).
+- **Formulas** — KaTeX: `FormulaDisplay` for joints, `features/powerScrew/ui/Tex.tsx` for the power screw. Use `\mathrm{N\cdot mm}` style units in LaTeX.
+- **Charts** — Recharts (`StressChart`, power-screw charts).
+- **PDF export** — `@react-pdf/renderer` in `ExportButtons` (joints).
+- **Icons** — lucide-react everywhere; no emojis in the UI.
+- **Rule:** equation numbers and book names stay in internal metadata (`ref`/`origin`) and docs, never in the visible calculation trace.
 
 ### Build chunking
 
-`vite.config.ts` splits each calculator module and heavy vendor libs (recharts, katex) into separate chunks via `manualChunks`. The worker is bundled as an ES module (`worker: { format: 'es' }`).
+`vite.config.ts` `manualChunks`: `power-screw` (engine), `tension-joint`, `shear-joint`, `vendor-charts`, `vendor-katex`, `vendor-canvas`. `PowerScrewWorkspace` is lazy-loaded (the landing prefetches it). The worker is bundled as an ES module.
 
 ### Path alias
 
@@ -72,9 +86,17 @@ Thread and material tables are loaded at app startup via `loadThreadTables()` an
 
 ### Tests
 
-Tests in `tests/unit/` target exported pure functions directly (no React, no DOM). They validate against example values from *Diseño en ingeniería mecánica de shigley, novena Ed.*. `tests/integration/fullFlow.test.ts` tests the end-to-end calculation pipeline by instantiating calculator classes directly.
+- `tests/unit/powerScrewEngine/` — engine, solver, units, sizing, persistence, session, schematic, examples (Shigley Example 8-1 reproduced), with fast-check property tests (`generators.ts`).
+- `tests/unit/landing.test.ts` — assembly drawing contract (3 focusable named parts, unique prefixed ids).
+- Joint unit tests and `tests/integration/fullFlow.test.ts` (all three calculators end to end).
+
+Pure functions only (no React, no DOM). Values are validated against *Diseño en ingeniería mecánica de shigley, novena Ed.*.
 
 All calculations and formulas should match the Mott textbook conventions (SI units internally; imperial inputs are converted before calculation).
+
+### User docs
+
+`docs/MANUAL_DE_USO.md`, `docs/CONTENIDO_APP.md`, the in-app `src/components/UserManual.tsx`, and the PDFs in `public/` generated by `python docs/build_pdfs.py` (reportlab). Keep the four in sync when features change.
 
 # CLAUDE.md - Token Efficient Rules
 
