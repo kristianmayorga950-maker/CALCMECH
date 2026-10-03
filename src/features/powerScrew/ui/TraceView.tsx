@@ -12,6 +12,7 @@ import TorqueBreakdown from './charts/TorqueBreakdown';
 import EfficiencyLeadChart from './charts/EfficiencyLeadChart';
 import NutLoadShare from './charts/NutLoadShare';
 import { inputTex, resultTex } from './valueFormat';
+import { SystemSchematic } from './schematic/SystemSchematic';
 
 const STAGES: { id: StageId; title: string }[] = [
   { id: 'geometry',     title: 'Geometría de la rosca' },
@@ -102,6 +103,7 @@ export default function TraceView({ result, system, cfg, dispatch, sizing, state
           <p className="ps-statement-text">{statement.text}</p>
         </aside>
       )}
+      <SystemSchematic cfg={cfg} values={result.values} />
       <ResultSummary result={result} cfg={cfg} system={system} />
       {sugg && (
         <p className="ps-hint">

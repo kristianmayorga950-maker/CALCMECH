@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePowerScrew } from '../state/usePowerScrew';
 import type { UnitSystem } from '../state/problemState';
 import type { ProblemConfig } from '../engine/types';
@@ -6,7 +6,9 @@ import ProblemRail from './ProblemRail';
 import TraceView from './TraceView';
 import ChecksLedger from './ChecksLedger';
 import ProjectMenu, { DEFAULT_NAME } from './ProjectMenu';
-import type { WorkedExample } from '../examples/examples';
+import { EXAMPLES, type WorkedExample } from '../examples/examples';
+import { loadSession, saveSession } from '../state/session';
+import { getStore } from './storage';
 import './powerScrew.css';
 
 function summary(cfg: ProblemConfig): string[] {
@@ -21,9 +23,28 @@ function summary(cfg: ProblemConfig): string[] {
 }
 
 export function PowerScrewWorkspace({ system }: { system: UnitSystem }) {
-  const { state, dispatch, result, sizing } = usePowerScrew(system);
-  const [name, setName] = useState(DEFAULT_NAME);
-  const [example, setExample] = useState<WorkedExample | null>(null);
+  // La sesión anterior (si la hay) se recupera una sola vez al montar.
+  const [session] = useState(() => loadSession(getStore(), system));
+  const { state, dispatch, result, sizing } = usePowerScrew(system, session?.state);
+  const [name, setName] = useState(session?.name ?? DEFAULT_NAME);
+  const [example, setExample] = useState<WorkedExample | null>(
+    () => EXAMPLES.find(e => e.id === session?.exampleId) ?? null,
+  );
+
+  // Autoguardado con medio segundo de espera; un estado vacío (Reiniciar) borra la ranura.
+  useEffect(() => {
+    const t = window.setTimeout(() => saveSession(getStore(), name, state, example?.id), 500);
+    return () => window.clearTimeout(t);
+  }, [state, name, example]);
+
+  // Al salir de la sección o cerrar la pestaña se guarda sin esperar.
+  const latest = useRef({ name, state, example });
+  latest.current = { name, state, example };
+  useEffect(() => {
+    const flush = () => { const l = latest.current; saveSession(getStore(), l.name, l.state, l.example?.id); };
+    window.addEventListener('pagehide', flush);
+    return () => { window.removeEventListener('pagehide', flush); flush(); };
+  }, []);
   const parts = summary(state.cfg);
 
   return (

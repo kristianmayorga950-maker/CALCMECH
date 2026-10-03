@@ -83,7 +83,8 @@ export function reducer(s: ProblemState, a: Action): ProblemState {
     case 'value': {
       const entered = { ...s.entered };
       if (a.value === undefined) delete entered[a.id];
-      else entered[a.id] = { value: a.value, unit: s.unitPref[a.id] };
+      // -0 se guarda como 0 (JSON no distingue el signo del cero y el campo no debe mostrar «-0»).
+      else entered[a.id] = { value: a.value === 0 ? 0 : a.value, unit: s.unitPref[a.id] };
       // Editar a mano un valor que venía de una tabla rompe el vínculo con la tabla.
       const selections = { ...s.selections };
       if (a.id === 'd' || a.id === 'p') delete selections.acmeSize;

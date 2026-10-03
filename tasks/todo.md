@@ -64,3 +64,11 @@ Alcance: SOLO la sección de tornillo de potencia. Modelos: Opus 5.5 y Sonnet 5.
 - [x] docs/power-screw/README.md: qué hace, ramas, supuestos, validación, 137 pruebas, skills y modelos, comparación
 - [ ] Limpieza del código viejo (pendiente de aprobación)
 - [ ] Manual, PDF y CLAUDE.md desactualizados (pendiente de aprobación)
+
+## Del plano al cálculo — paso 2 (hecho, 2026-10-02)
+- [x] Esquema del sistema en vivo arriba de la traza (plegable, recordado), con «Ver en grande» (diálogo nativo) y viewBox recortado al dibujo
+- [x] Miniaturas en «Abrir guardado»: mecanismo, sello del veredicto, criterio que gobierna con %, F y d
+- [x] Autoguardado de la sesión (`calcmech-power-screw:session`, 0.5 s + al salir/cerrar), se restaura al volver; «Reiniciar» la borra
+- [x] Pruebas: schematic.test.ts (9) y session.test.ts (6); 256 en verde
+- [x] Hallazgo de las pruebas de propiedades: `-0` no volvía igual tras guardar → el reductor lo normaliza a 0 (prueba fijada)
+- [x] Hallazgo: la carga de trabajo derivada es `Fw` (modo capacidad), no `F` → la miniatura y las cotas usan `Fw ?? F`

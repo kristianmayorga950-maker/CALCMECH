@@ -7,6 +7,8 @@ import {
   deleteProject, listProjects, parse, reportMarkdown, saveProject, serialize, type SavedProject,
 } from '../state/persistence';
 import { getStore } from './storage';
+import { projectSnapshot } from './schematic/fromState';
+import { ProjectThumbnail } from './schematic/SystemSchematic';
 
 export const DEFAULT_NAME = 'Proyecto sin nombre';
 
@@ -59,6 +61,7 @@ export default function ProjectMenu({ system, state, dispatch, result, name, set
   // `version` fuerza releer la biblioteca tras guardar o borrar.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const saved = useMemo(() => (open ? listProjects(getStore(), system) : []), [open, system, version]);
+  const snaps = useMemo(() => new Map(saved.map(p => [p.id, projectSnapshot(p.state)])), [saved]);
 
   const close = (focus = true) => {
     setOpen(false); setPending(null); setStatus(''); setError('');
@@ -186,6 +189,7 @@ export default function ProjectMenu({ system, state, dispatch, result, name, set
                 <li key={p.id} className="ps-pm-saved">
                   <span className="ps-pm-sname">{p.name}</span>
                   <span className="ps-pm-date ps-mono">{p.savedAt ? new Date(p.savedAt).toLocaleString('es') : ''}</span>
+                  {snaps.get(p.id) && <ProjectThumbnail snap={snaps.get(p.id)!} />}
                   {pending?.kind === 'delete' && pending.p.id === p.id ? (
                     <div className="ps-pm-confirm" role="alertdialog" aria-label={`¿Borrar «${p.name}»?`}>
                       <p>¿Borrar «{p.name}»?</p>

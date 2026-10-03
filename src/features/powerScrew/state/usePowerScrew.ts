@@ -22,8 +22,8 @@ export function tableExtras(s: ProblemState): Partial<Record<InputId, number>> {
  * La sustitución usa unidades base coherentes (N, mm, MPa); el resultado se
  * muestra además en la unidad preferida (ver ARQUITECTURA §3).
  */
-export function usePowerScrew(system: UnitSystem) {
-  const [state, dispatch] = useReducer(reducer, system, initialState);
+export function usePowerScrew(system: UnitSystem, restored?: ProblemState) {
+  const [state, dispatch] = useReducer(reducer, system, s => restored ?? initialState(s));
   const extras = useMemo(() => tableExtras(state), [state]);
   const result = useMemo(
     () => solve(ENGINE, state.cfg, state.entered, { extras }),

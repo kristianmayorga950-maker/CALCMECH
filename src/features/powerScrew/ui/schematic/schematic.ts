@@ -85,6 +85,8 @@ export function drawSystem(inp: SchematicInput): string {
   const sw = compact ? 2.4 : 1.6;
 
   const parts: string[] = [];
+  // Extensión horizontal ocupada: el viewBox se recorta a ella (más grande en pantalla).
+  let x0 = cx - 195, x1 = cx + 200;
   const title = inp.title ?? describe(inp);
 
   // ── Definiciones: degradados metálicos, rayado de corte, flechas ──
@@ -188,6 +190,8 @@ export function drawSystem(inp: SchematicInput): string {
     const rDraw = dm.r ? Math.min(rMax, Math.max(rMin, 60 + Math.log10(Math.max(1, dm.r)) * 55)) : 150;
     const hands = inp.hands === 2 ? 2 : 1;
     const xL = hands === 2 ? cx - rDraw : cx - rs - 6;
+    x0 = Math.min(x0, xL - 12);
+    x1 = Math.max(x1, cx + rDraw + (compact ? 12 : 100));
     parts.push(`<rect x="${n(xL)}" y="${yIn - 5}" width="${n(cx + rDraw - xL)}" height="10" rx="5" fill="url(#${id}m)" class="sx-solid" stroke-width="${sw}"/>`);
     // Fuerza P en el extremo (tangencial: hacia el observador → flecha vertical en vista)
     const pv = dm.P ? kN(dm.P) : null;
@@ -220,6 +224,7 @@ export function drawSystem(inp: SchematicInput): string {
     for (let x = cx - 56; x <= cx + 56; x += 8) parts.push(`<line class="sx-thin" x1="${x}" y1="${yG - 16}" x2="${x}" y2="${yG + 16}" opacity=".5"/>`);
     // Sinfín (eje horizontal) y motor
     const xw0 = cx - 230, xw1 = cx - 62;
+    x0 = Math.min(x0, compact ? xw0 - 8 : xw0 - 50);
     parts.push(`<rect x="${xw0 + 70}" y="${yG - 9}" width="${xw1 - xw0 - 70}" height="18" fill="url(#${id}m)" class="sx-solid" stroke-width="${sw}"/>`);
     for (let x = xw0 + 78; x < xw1 - 4; x += 9) parts.push(`<path class="sx-thin" d="M${x} ${yG - 9} L${x + 6} ${yG + 9}"/>`);
     parts.push(`<rect x="${xw0}" y="${yG - 30}" width="72" height="60" rx="6" fill="url(#${id}m)" class="sx-solid" stroke-width="${sw}"/>`);
@@ -264,15 +269,18 @@ export function drawSystem(inp: SchematicInput): string {
     // Columna libre L (solo compresión)
     if (inp.load === 'compression') {
       const xl = cx - bodyHalf - 34;
+      x0 = Math.min(x0, xl - 100);
       parts.push(`<line class="${dm.L ? 'sx-dim' : 'sx-dimx'}" x1="${xl}" y1="${yThreadTop}" x2="${xl}" y2="${yNutTop}" marker-start="url(#${id}a)" marker-end="url(#${id}a)"/>`);
       parts.push(label(xl - 6, (yThreadTop + yNutTop) / 2 + 4, 'L', null, dm.L ? mm(dm.L) : null, 'end'));
     }
     parts.push(`<text class="sx-tm" x="${nutX0 - 6}" y="${yNutTop + 26}" text-anchor="end">tuerca</text>`);
     parts.push(`<text class="sx-tm" x="${cx - 170}" y="${yBaseBot - 10}">bastidor</text>`);
-    parts.push(`<text class="sx-tm" x="${W - 16}" y="${H - 10}" text-anchor="end">rosca ${inp.thread === 'acme' ? 'Acme' : 'cuadrada'} · corte parcial</text>`);
+    parts.push(`<text class="sx-tm" x="${cx}" y="${H - 12}" text-anchor="middle">rosca ${inp.thread === 'acme' ? 'Acme' : 'cuadrada'} · corte parcial</text>`);
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeAttr(title)}"><title>${escapeText(title)}</title>${parts.join('')}</svg>`;
+  x0 = Math.max(0, x0); x1 = Math.min(W, x1);
+  const vb = compact ? `0 0 ${W} ${H}` : `${n(x0)} 0 ${n(x1 - x0)} ${H}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" role="img" aria-label="${escapeAttr(title)}"><title>${escapeText(title)}</title>${parts.join('')}</svg>`;
 }
 
 /** Descripción en palabras del sistema dibujado (texto alternativo). */

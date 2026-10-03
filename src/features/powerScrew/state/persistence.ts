@@ -108,7 +108,7 @@ export function parse(text: string, system: UnitSystem = 'SI'): ParseResult {
 
 // ── Biblioteca local ─────────────────────────────────────────────────────────
 
-export interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, v: string): void }
+export interface KeyValueStore { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem?(k: string): void }
 
 export function listProjects(store: KeyValueStore | null, system: UnitSystem = 'SI'): SavedProject[] {
   if (!store) return [];
