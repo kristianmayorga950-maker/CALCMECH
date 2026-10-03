@@ -30,7 +30,7 @@ describe('autoguardado de la sesión', () => {
   it('lo autoguardado se recupera idéntico (ida y vuelta)', () => {
     fc.assert(fc.property(arbState, arbName, fc.option(fc.constantFrom(...EXAMPLES.map(e => e.id)), { nil: undefined }), (s, name, ex) => {
       const st = memStore();
-      const saved = saveSession(st, name, s, ex);
+      const saved = saveSession(st, name, s, { exampleId: ex, projectId: ex && `p-${ex}` });
       const back = loadSession(st);
       if (isEmptyState(s)) {
         expect(saved).toBe(false);
@@ -40,6 +40,7 @@ describe('autoguardado de la sesión', () => {
         expect(back?.state).toEqual(s);
         expect(back?.name).toBe(name.trim());
         expect(back?.exampleId).toBe(ex);
+        expect(back?.projectId).toBe(ex && `p-${ex}`);
       }
     }), { numRuns: 300 });
   });

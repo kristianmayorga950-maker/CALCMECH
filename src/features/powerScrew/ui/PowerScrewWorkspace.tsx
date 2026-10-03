@@ -30,18 +30,20 @@ export function PowerScrewWorkspace({ system }: { system: UnitSystem }) {
   const [example, setExample] = useState<WorkedExample | null>(
     () => EXAMPLES.find(e => e.id === session?.exampleId) ?? null,
   );
+  // Proyecto guardado que está abierto: «Guardar» lo sobrescribe.
+  const [projectId, setProjectId] = useState<string | undefined>(session?.projectId);
 
   // Autoguardado con medio segundo de espera; un estado vacío (Reiniciar) borra la ranura.
   useEffect(() => {
-    const t = window.setTimeout(() => saveSession(getStore(), name, state, example?.id), 500);
+    const t = window.setTimeout(() => saveSession(getStore(), name, state, { exampleId: example?.id, projectId }), 500);
     return () => window.clearTimeout(t);
-  }, [state, name, example]);
+  }, [state, name, example, projectId]);
 
   // Al salir de la sección o cerrar la pestaña se guarda sin esperar.
-  const latest = useRef({ name, state, example });
-  latest.current = { name, state, example };
+  const latest = useRef({ name, state, example, projectId });
+  latest.current = { name, state, example, projectId };
   useEffect(() => {
-    const flush = () => { const l = latest.current; saveSession(getStore(), l.name, l.state, l.example?.id); };
+    const flush = () => { const l = latest.current; saveSession(getStore(), l.name, l.state, { exampleId: l.example?.id, projectId: l.projectId }); };
     window.addEventListener('pagehide', flush);
     return () => { window.removeEventListener('pagehide', flush); flush(); };
   }, []);
@@ -57,7 +59,8 @@ export function PowerScrewWorkspace({ system }: { system: UnitSystem }) {
             <span key={p}>{i > 0 && ' · '}<span className="ps-mono">{p}</span></span>
           ))}
         </p>
-        <ProjectMenu system={system} state={state} dispatch={dispatch} result={result} name={name} setName={setName} onExample={setExample} />
+        <ProjectMenu system={system} state={state} dispatch={dispatch} result={result} name={name} setName={setName} onExample={setExample}
+          currentId={projectId} setCurrentId={setProjectId} />
       </header>
       <div className="ps-grid">
         <ProblemRail system={system} state={state} dispatch={dispatch} result={result} />

@@ -261,43 +261,6 @@
   .animate-slide-in-right { animation: slideInRight 0.6s cubic-bezier(.22,1,.36,1) both; }
   .animate-count-up       { animation: countUp 0.5s cubic-bezier(.22,1,.36,1) both; }
 
-  /* ── Slideshow ─────────────────────────────────────────── */
-  .slide-image { position:absolute; inset:0; background-size:cover; background-position:center; transition:opacity 1.2s ease; }
-  .slide-image.active   { opacity:1; }
-  .slide-image.inactive { opacity:0; }
-
-  /* ── Landing hero overlay ─────────────────────────────── */
-  .hero-overlay {
-    background: linear-gradient(to bottom,
-      rgba(11,19,38,0.60) 0%,
-      rgba(11,19,38,0.30) 40%,
-      rgba(11,19,38,0.75) 80%,
-      rgba(11,19,38,0.95) 100%
-    );
-  }
-
-  /* ── Landing calc cards ────────────────────────────────── */
-  .calc-card {
-    @apply relative overflow-hidden rounded-xl transition-all duration-300
-           hover:-translate-y-1 cursor-pointer backdrop-blur-sm;
-    background: rgba(23,31,51,0.80);
-    border: 1px solid rgba(60,74,70,0.60);
-  }
-  .calc-card:hover { border-color:rgba(87,241,219,0.50); box-shadow:0 8px 40px rgba(87,241,219,0.18); }
-  .calc-card::before {
-    content:''; position:absolute; inset:0;
-    background: linear-gradient(135deg,rgba(87,241,219,0.08) 0%,transparent 60%);
-    opacity:0; transition:opacity 0.4s ease;
-  }
-  .calc-card:hover::before { opacity:1; }
-
-  /* ── Accent bar ───────────────────────────────────────── */
-  .accent-bar {
-    @apply h-0.5 w-12 rounded-full;
-    background: var(--c-primary);
-    box-shadow: 0 0 8px var(--c-primary-glow);
-  }
-
   /* ── Back button ──────────────────────────────────────── */
   .btn-back {
     @apply flex items-center gap-2 text-sm font-semibold tracking-wide transition-colors duration-200;
@@ -391,3 +354,43 @@
 
 /* Cards: stronger border for better section separation */
 [data-theme="light"] .card { border-color: #9aabca; }
+
+/* ── Marco de plano: lista de piezas (barra lateral) y cajetín (barra superior) ── */
+/* En la capa de componentes para que las utilidades (hidden, sm:flex…) puedan anularlas. */
+@layer components {
+.bom-ball {
+  display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px;
+  border: 1.4px solid currentColor; border-radius: 50%;
+  font: 600 11.5px "IBM Plex Mono", ui-monospace, monospace;
+}
+.bom-ball-on { color: var(--c-primary); }
+.tb-bar {
+  display: flex; align-items: stretch;
+  background: var(--c-surface-low);
+  border-bottom: 1.5px solid var(--c-text-dim);
+}
+.tb-cell {
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  padding: 0 12px; min-width: 0; border: 0; border-left: .75px solid var(--c-border);
+  background: transparent; color: inherit; font: inherit;
+}
+.tb-cell:first-child { border-left: 0; }
+.tb-grow { flex: 1 1 auto; }
+.tb-row { flex-direction: row; align-items: center; gap: 4px; }
+.tb-label {
+  font: 9px "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c-text-dim);
+}
+.tb-value { font-size: 13.5px; line-height: 1.25; }
+.tb-btn { align-items: center; cursor: pointer; color: var(--c-text-muted); }
+.tb-btn:hover, .tb-back:hover { color: var(--c-primary); background: var(--c-primary-glow); }
+.tb-back { align-items: center; justify-content: center; cursor: pointer; }
+.tb-btn:focus-visible, .tb-back:focus-visible { outline: 2px solid var(--c-primary); outline-offset: -2px; }
+}
+
+/* ── Transición portada ↔ calculadora (View Transitions) ── */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; }
+::view-transition-group(*) { animation-duration: .42s; animation-timing-function: cubic-bezier(.2, .7, .2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

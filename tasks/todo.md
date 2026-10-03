@@ -72,3 +72,10 @@ Alcance: SOLO la sección de tornillo de potencia. Modelos: Opus 5.5 y Sonnet 5.
 - [x] Pruebas: schematic.test.ts (9) y session.test.ts (6); 256 en verde
 - [x] Hallazgo de las pruebas de propiedades: `-0` no volvía igual tras guardar → el reductor lo normaliza a 0 (prueba fijada)
 - [x] Hallazgo: la carga de trabajo derivada es `Fw` (modo capacidad), no `F` → la miniatura y las cotas usan `Fw ?? F`
+
+## Del plano al cálculo — paso 3 (hecho, 2026-10-02)
+- [x] Portada nueva en src/components/landing/ (plano de conjunto del gato, globos 1–3, lista de piezas, cajetín con logo y créditos, trazado inicial único, cianotipo/plano según el tema)
+- [x] «Continuar» con la sesión autoguardada y «Proyectos guardados» con miniatura; abrir un proyecto conserva su id (Guardar lo sobrescribe); confirma si hay sesión sin guardar
+- [x] Barra superior como cajetín y barra lateral como lista de piezas; View Transitions con flushSync (pieza-N y cajetín compartidos), sin animación con reducir movimiento
+- [x] Borrados: LandingPage.tsx (carrusel Unsplash), Header.tsx (sin uso) y su CSS (.slide-image, .hero-overlay, .calc-card, .accent-bar); título de pestaña «CALCMECH · Elementos roscados»
+- [x] Verificado: claro/oscuro, 375 px sin desborde, teclado (Enter sobre una pieza), Tensión y Cortante calculan igual, consola limpia; 259 pruebas, build OK

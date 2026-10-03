@@ -20,6 +20,9 @@ interface Props {
   name: string;
   setName: (n: string) => void;
   onExample: (ex: WorkedExample | null) => void;
+  /** Proyecto guardado abierto (lo guarda el autoguardado de la sesión). */
+  currentId: string | undefined;
+  setCurrentId: (id: string | undefined) => void;
 }
 
 type Pending =
@@ -44,10 +47,9 @@ function download(text: string, filename: string, mime: string) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export default function ProjectMenu({ system, state, dispatch, result, name, setName, onExample }: Props) {
+export default function ProjectMenu({ system, state, dispatch, result, name, setName, onExample, currentId, setCurrentId }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(name);
-  const [currentId, setCurrentId] = useState<string | undefined>();
   const [pending, setPending] = useState<Pending | null>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');

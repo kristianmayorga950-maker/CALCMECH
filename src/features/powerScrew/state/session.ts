@@ -15,9 +15,12 @@ import type { ProblemState, UnitSystem } from './problemState';
 
 export const SESSION_KEY = `${APP_TAG}:session`;
 
-export interface Session { name: string; state: ProblemState; savedAt: string; exampleId?: string }
+/** Qué estaba abierto: un ejemplo (muestra su planteamiento) o un proyecto guardado (Guardar lo sobrescribe). */
+export interface SessionMeta { exampleId?: string; projectId?: string }
 
-interface SessionEnvelope { data: string; exampleId?: string }
+export interface Session extends SessionMeta { name: string; state: ProblemState; savedAt: string }
+
+interface SessionEnvelope extends SessionMeta { data: string }
 
 /** Sin datos escritos, sin tablas elegidas y con la configuración por defecto. */
 export function isEmptyState(s: ProblemState): boolean {
@@ -34,10 +37,14 @@ export function clearSession(store: KeyValueStore | null): void {
 }
 
 /** Guarda la sesión; un estado vacío borra la ranura. Devuelve si quedó guardada. */
-export function saveSession(store: KeyValueStore | null, name: string, state: ProblemState, exampleId?: string, now = new Date()): boolean {
+export function saveSession(store: KeyValueStore | null, name: string, state: ProblemState, meta: SessionMeta = {}, now = new Date()): boolean {
   if (!store) return false;
   if (isEmptyState(state)) { clearSession(store); return false; }
-  const env: SessionEnvelope = { data: serialize(state, name, now), ...(exampleId ? { exampleId } : {}) };
+  const env: SessionEnvelope = {
+    data: serialize(state, name, now),
+    ...(meta.exampleId ? { exampleId: meta.exampleId } : {}),
+    ...(meta.projectId ? { projectId: meta.projectId } : {}),
+  };
   try { store.setItem(SESSION_KEY, JSON.stringify(env)); return true; } catch { return false; }
 }
 
@@ -49,10 +56,14 @@ export function loadSession(store: KeyValueStore | null, system: UnitSystem = 'S
   let env: unknown;
   try { env = JSON.parse(raw); } catch { return null; }
   if (typeof env !== 'object' || env === null || typeof (env as SessionEnvelope).data !== 'string') return null;
-  const { data, exampleId } = env as SessionEnvelope;
+  const { data, exampleId, projectId } = env as SessionEnvelope;
   const r = parse(data, system);
   if (!r.ok) return null;
   let savedAt = '';
   try { const s = JSON.parse(data).savedAt; if (typeof s === 'string') savedAt = s; } catch { /* ya validado */ }
-  return { name: r.name, state: r.state, savedAt, ...(typeof exampleId === 'string' ? { exampleId } : {}) };
+  return {
+    name: r.name, state: r.state, savedAt,
+    ...(typeof exampleId === 'string' ? { exampleId } : {}),
+    ...(typeof projectId === 'string' ? { projectId } : {}),
+  };
 }
