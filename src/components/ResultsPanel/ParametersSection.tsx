@@ -1,14 +1,13 @@
 import React from 'react';
-import type { PowerScrewResults } from '@/modules/powerScrew/types';
 import type { TensionJointResults } from '@/modules/tensionJoint/types';
 import type { ShearJointResults } from '@/modules/shearJoint/types';
 import { displayValue, mmToDisplay, NmmToDisplay, convertValueByUnit } from '@/utils/unitConverter';
 import { CollapsibleSection } from '@/components/common/CollapsibleSection';
 
 interface Props {
-  results:    PowerScrewResults | TensionJointResults | ShearJointResults | any;
+  results:    TensionJointResults | ShearJointResults | any;
   unitSystem: 'SI' | 'imperial';
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
 }
 
 const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
@@ -20,34 +19,6 @@ const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value
 
 export const ParametersSection: React.FC<Props> = ({ results, unitSystem, moduleType }) => {
   const imp = unitSystem === 'imperial';
-
-  if (moduleType === 'power') {
-    const r = results as PowerScrewResults;
-    const i = r.input;
-    const g = r.geometry;
-    return (
-      <CollapsibleSection title="Parámetros confirmados">
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-slate-800/60">
-            <Row label="Tipo de rosca"      value={i.threadType === 'acme' ? 'Acme (α=14.5°)' : 'Cuadrada (α=0°)'} />
-            <Row label="Diámetro mayor d"   value={mmToDisplay(g.d, unitSystem)} />
-            <Row label="Diámetro medio dm"  value={mmToDisplay(g.dm, unitSystem)} />
-            <Row label="Diámetro menor dr"  value={mmToDisplay(g.dr, unitSystem)} />
-            <Row label="Paso p"             value={mmToDisplay(g.p, unitSystem)} />
-            <Row label="Avance L (n·p)"     value={imp ? `${(g.lead/25.4).toFixed(4)} in (n=${i.numberOfStarts})` : `${g.lead.toFixed(3)} mm (n=${i.numberOfStarts})`} />
-            <Row label="Ángulo de avance λ" value={`${g.leadAngleDeg.toFixed(3)}°`} />
-            <Row label="Carga axial F"      value={displayValue(i.axialLoad, 'force', unitSystem)} />
-            <Row label="μ rosca"            value={i.frictionCoefficient.toString()} />
-            <Row label="Collarín"           value={i.hasCollar
-              ? `dc=${mmToDisplay(i.collarDiameter ?? 0, unitSystem)}, fc=${i.collarFriction}`
-              : '—'} />
-            <Row label="Filetes en contacto nt" value={i.engagedThreads.toString()} />
-            {i.material && <Row label="Material" value={`${i.material.name} — Sy=${imp ? `${(i.material.Sy * 145.038).toFixed(0)} psi` : `${i.material.Sy} MPa`}`} />}
-          </tbody>
-        </table>
-      </CollapsibleSection>
-    );
-  }
 
   if (moduleType === 'tension') {
     const r = results as TensionJointResults;

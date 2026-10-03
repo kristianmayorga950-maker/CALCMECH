@@ -5,24 +5,13 @@ import {
 
 interface Props {
   results:    any;
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
 }
 
 export const StressChart: React.FC<Props> = ({ results, moduleType }) => {
   let data: { name: string; actual: number; admisible: number }[] = [];
 
-  if (moduleType === 'power') {
-    const b = results.bodyStress;
-    const th = results.threadStress;
-    const allow = b.allowableSy ?? Math.max(b.sigmaVonMises, 1);
-    data = [
-      { name: 'σ axial',     actual: +b.sigmaAxial.toFixed(2),    admisible: +allow.toFixed(2) },
-      { name: 'τ torsión',   actual: +b.tauTorsion.toFixed(2),    admisible: +(allow / Math.sqrt(3)).toFixed(2) },
-      { name: 'Von Mises',   actual: +b.sigmaVonMises.toFixed(2), admisible: +allow.toFixed(2) },
-      { name: 'σ aplast.',   actual: +th.bearing.toFixed(2),      admisible: +allow.toFixed(2) },
-      { name: 'σ flex. filete', actual: +th.bending.toFixed(2),   admisible: +allow.toFixed(2) },
-    ];
-  } else if (moduleType === 'tension') {
+if (moduleType === 'tension') {
     const s = results.staticLoad;
     data = [
       { name: 'np (carga)',     actual: +s.np.toFixed(2), admisible: 2.0 },

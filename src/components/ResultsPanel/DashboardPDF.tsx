@@ -282,79 +282,10 @@ const ShearPDF: React.FC<{ r: any; imp: boolean }> = ({ r, imp }) => {
   );
 };
 
-/* ───────────────────────── Power Screw PDF ───────────────────────── */
-const PowerPDF: React.FC<{ r: any; imp: boolean }> = ({ r, imp }) => {
-  const i = r.input;
-  const g = r.geometry;
-  const t = r.torques;
-  const b = r.bodyStress;
-  const ts = r.threadStress;
-  const ind = r.indicators;
-  return (
-    <Page size="A4" style={styles.page}>
-      <View style={styles.headerBar}>
-        <Text style={styles.title}>Diseño Final — Tornillo de Potencia</Text>
-        <Text style={styles.subtitle}>Shigley 9ª ed. §8-1 y §8-2 · {new Date().toLocaleDateString('es-CO')}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitle accent>Tornillo (sujeción)</SectionTitle>
-        <Row label="Tipo de rosca"       value={i.threadType === 'acme' ? 'Acme (α=14.5°)' : 'Cuadrada (α=0°)'} />
-        <Row label="Diámetro mayor d"    value={fmtMm(g.d, imp)} />
-        <Row label="Diámetro medio dm"   value={fmtMm(g.dm, imp)} />
-        <Row label="Diámetro menor dr"   value={fmtMm(g.dr, imp)} />
-        <Row label="Paso p"              value={fmtMm(g.p, imp)} />
-        <Row label="Avance L"            value={`${fmtMm(g.lead, imp)} (n = ${i.numberOfStarts})`} />
-        <Row label="Ángulo de avance λ"  value={`${g.leadAngleDeg.toFixed(3)}°`} />
-        <Row label="Filetes en contacto" value={i.engagedThreads.toString()} />
-        {i.material && <Row label="Material"   value={`${i.material.name} — Sy = ${fmtMPa(i.material.Sy, imp)}`} />}
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitle>Carga y fricción</SectionTitle>
-        <Row label="Carga axial F"       value={fmtN(i.axialLoad, imp)} />
-        <Row label="μ rosca"             value={i.frictionCoefficient.toString()} />
-        <Row label="Collarín"            value={i.hasCollar ? `dc = ${fmtMm(i.collarDiameter ?? 0, imp)}, fc = ${i.collarFriction}` : '—'} />
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitle accent>Factores clave</SectionTitle>
-        <View style={styles.gridRow}>
-          <Kpi label="n fluencia"  value={(ind?.safetyFactorYield ?? 0).toFixed(2)} sub="Sy / σ'" />
-          <Kpi label="Eficiencia"  value={`${ind?.efficiencyPercent?.toFixed(1) ?? '—'} %`} sub="F·L / (2π·TR)" />
-          <Kpi label="Autobloqueo" value={ind?.selfLocking ? 'Sí' : 'No'} sub={ind?.selfLocking ? 'Seguro' : 'Requiere freno'} />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitle>Torques</SectionTitle>
-        <Row label="TR (subida)"       value={fmtNm(t.TR, imp)} />
-        <Row label="TL (bajada)"       value={fmtNm(t.TL, imp)} />
-        <Row label="Tc (collarín)"     value={fmtNm(t.Tc, imp)} />
-        <Row label="T total (elevar)"  value={fmtNm(t.Ttotal, imp)} />
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitle>Esfuerzos</SectionTitle>
-        <Row label="σ axial (cuerpo)"  value={fmtMPa(b.sigmaAxial, imp)} />
-        <Row label="τ torsión (cuerpo)" value={fmtMPa(b.tauTorsion, imp)} />
-        <Row label="σ' Von Mises"       value={fmtMPa(b.sigmaVonMises, imp)} />
-        <Row label="σ aplastamiento filete" value={fmtMPa(ts.bearing, imp)} />
-        <Row label="σ flexión filete"       value={fmtMPa(ts.bending, imp)} />
-        <Row label="τ cortante filete"      value={fmtMPa(ts.shear, imp)} />
-      </View>
-
-      <Text style={styles.footer} fixed>
-        Calculadora de Tornillos · Diseño II · Universidad · Ref. Shigley 9ª ed.
-      </Text>
-    </Page>
-  );
-};
-
 /* ───────────────────────── Document principal ───────────────────────── */
 export const DashboardPDF: React.FC<{
   results:    any;
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
   unitSystem: 'SI' | 'imperial';
 }> = ({ results, moduleType, unitSystem }) => {
   const imp = unitSystem === 'imperial';
@@ -366,7 +297,6 @@ export const DashboardPDF: React.FC<{
     >
       {moduleType === 'tension' && <TensionPDF r={results} imp={imp} />}
       {moduleType === 'shear'   && <ShearPDF   r={results} imp={imp} />}
-      {moduleType === 'power'   && <PowerPDF   r={results} imp={imp} />}
     </Document>
   );
 };

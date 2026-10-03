@@ -3,9 +3,9 @@ import { useCalculator } from '@/context/CalculatorContext';
 
 /**
  * Conmuta entre cálculo manual de un caso y diseño automático (barrido iterativo).
- * `tab` debe ser 'power' o 'shear' (la pestaña Tensión no tiene modo automático).
+ * Solo la junta a cortante tiene modo automático.
  */
-export const DesignModeToggle: React.FC<{ tab: 'power' | 'shear' }> = ({ tab }) => {
+export const DesignModeToggle: React.FC<{ tab: 'shear' }> = ({ tab }) => {
   const { state, setAutoMode } = useCalculator();
   const auto = state.autoMode[tab];
 
@@ -21,8 +21,8 @@ export const DesignModeToggle: React.FC<{ tab: 'power' | 'shear' }> = ({ tab }) 
           <p className="text-sm font-semibold" style={{ color: 'var(--c-text)' }}>Modo de cálculo</p>
           <p className="text-[11px]" style={{ color: 'var(--c-text-muted)' }}>
             {auto
-              ? 'Barre cuerdas y materiales/grados y recomienda el menor tamaño que cumple el factor objetivo.'
-              : 'Evalúa un solo caso con la cuerda y el material que ingreses.'}
+              ? 'Barre pernos y grados y recomienda el menor tamaño que cumple el factor objetivo.'
+              : 'Evalúa un solo caso con el perno y el grado que ingreses.'}
           </p>
         </div>
         <div className="flex rounded-md overflow-hidden shrink-0" style={{ border: '1px solid var(--c-border)' }}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TriangleAlert } from 'lucide-react';
 
 interface UnitInputProps {
   label:        string;
@@ -122,7 +123,7 @@ export const UnitInput: React.FC<UnitInputProps> = ({
       {/* Comma warning — highest priority */}
       {commaWarning && (
         <p className="mt-1 text-xs text-amber-400 font-medium">
-          ⚠ Usa punto (.) como separador decimal, no coma (,).
+          <TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Usa punto (.) como separador decimal, no coma (,).
         </p>
       )}
 

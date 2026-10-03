@@ -1,9 +1,9 @@
 import React from 'react';
+import { Bolt } from 'lucide-react';
 import { useCalculator } from '@/context/CalculatorContext';
 import { ParametersSection }  from './ParametersSection';
 import { CalculationsSection } from './CalculationsSection';
 import { VerdictBox }         from './VerdictBox';
-import { AlternativesTable }  from './AlternativesTable';
 import { GasketResultsSection } from './GasketResultsSection';
 import { DesignSweepTable }    from './DesignSweepTable';
 import { DesignDashboard }    from './DesignDashboard';
@@ -12,7 +12,7 @@ import { CollapsibleSection } from '@/components/common/CollapsibleSection';
 
 const EmptyState: React.FC = () => (
   <div className="flex flex-col items-center justify-center h-64" style={{ color: 'var(--c-text-dim)' }}>
-    <span className="text-6xl mb-4 animate-float select-none">🔩</span>
+    <Bolt size={60} strokeWidth={1.75} className="mb-4 animate-float select-none" aria-hidden="true" />
     <p className="text-base font-medium" style={{ color: 'var(--c-text-muted)' }}>Ingrese los parámetros y presione CALCULAR</p>
     <p className="text-sm mt-1" style={{ color: 'var(--c-text-dim)' }}>Los resultados aparecerán aquí</p>
   </div>
@@ -47,12 +47,14 @@ const UnitToggle: React.FC = () => {
 
 export const ResultsPanel: React.FC = () => {
   const { state } = useCalculator();
+  // El tornillo de potencia tiene su propia sección (src/features/powerScrew); aquí solo juntas.
+  if (state.activeTab === 'power') return null;
   const tab = state.activeTab;
 
   // ── Modo "Diseño automático" (barrido iterativo) ──
-  const isAuto = (tab === 'power' && state.autoMode.power) || (tab === 'shear' && state.autoMode.shear);
+  const isAuto = tab === 'shear' && state.autoMode.shear;
   if (isAuto) {
-    const sweep = tab === 'power' ? state.powerSweep : state.shearSweep;
+    const sweep = state.shearSweep;
     if (!sweep) return <EmptyState />;
     return (
       <div className="space-y-3">
@@ -60,17 +62,14 @@ export const ResultsPanel: React.FC = () => {
         <ScrollReveal delay={0}>
           <div className="card">
             <h3 className="section-title">Tabla de diseño iterativo</h3>
-            <DesignSweepTable sweep={sweep} moduleType={tab as 'power' | 'shear'} />
+            <DesignSweepTable sweep={sweep} />
           </div>
         </ScrollReveal>
       </div>
     );
   }
 
-  const results =
-    tab === 'power'   ? state.powerResults   :
-    tab === 'tension' ? state.tensionResults :
-    state.shearResults;
+  const results = tab === 'tension' ? state.tensionResults : state.shearResults;
 
   if (!results) return <EmptyState />;
 
@@ -94,13 +93,6 @@ export const ResultsPanel: React.FC = () => {
           <ScrollReveal delay={220}>
             <CollapsibleSection title="Unión con empaque" defaultOpen={false}>
               <GasketResultsSection results={results as any} unitSystem={state.unitSystem} />
-            </CollapsibleSection>
-          </ScrollReveal>
-        )}
-        {tab === 'power' && (
-          <ScrollReveal delay={240}>
-            <CollapsibleSection title="Alternativas de diseño" defaultOpen={false}>
-              <AlternativesTable results={results} moduleType={tab} />
             </CollapsibleSection>
           </ScrollReveal>
         )}

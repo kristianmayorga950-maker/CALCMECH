@@ -1,4 +1,6 @@
 import React, { Suspense, useState } from 'react';
+import { Cog, ArrowUpDown, Scissors, BookOpen, House, Sun, Moon, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { CalculatorProvider, useCalculator } from '@/context/CalculatorContext';
 import type { ActiveTab } from '@/context/CalculatorContext';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
@@ -7,11 +9,13 @@ import { InputPanel }   from '@/components/InputPanel';
 import { ResultsPanel } from '@/components/ResultsPanel';
 import { UserManual }   from '@/components/UserManual';
 
+const PowerScrewWorkspace = React.lazy(() => import('@/features/powerScrew/ui/PowerScrewWorkspace'));
+
 // ── Tab metadata ──────────────────────────────────────────────────────────────
-const TABS: { id: ActiveTab; emoji: string; label: string; shortLabel: string; ref: string }[] = [
-  { id: 'power',   emoji: '⚙️', label: 'Tornillo de Potencia', shortLabel: 'Potencia',  ref: 'Shigley §8-1, §8-2'   },
-  { id: 'tension', emoji: '🔩', label: 'Junta a Tensión',      shortLabel: 'Tensión',   ref: 'Shigley §8-3 – §8-11' },
-  { id: 'shear',   emoji: '✂️', label: 'Junta a Cortante',     shortLabel: 'Cortante',  ref: 'Shigley §8-12'        },
+const TABS: { id: ActiveTab; Icon: LucideIcon; label: string; shortLabel: string; ref: string }[] = [
+  { id: 'power',   Icon: Cog, label: 'Tornillo de Potencia', shortLabel: 'Potencia',  ref: 'Shigley §8-1, §8-2'   },
+  { id: 'tension', Icon: ArrowUpDown, label: 'Junta a Tensión',      shortLabel: 'Tensión',   ref: 'Shigley §8-3 – §8-11' },
+  { id: 'shear',   Icon: Scissors, label: 'Junta a Cortante',     shortLabel: 'Cortante',  ref: 'Shigley §8-12'        },
 ];
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -20,44 +24,69 @@ interface SidebarProps {
   onTabChange: (tab: ActiveTab) => void;
   onGoHome: () => void;
   onOpenManual: () => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome, onOpenManual }) => (
-  <aside className="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant z-50 hidden lg:flex flex-col">
-    {/* Logo */}
-    <div className="p-5 border-b border-outline-variant">
-      <button onClick={onGoHome} className="text-left w-full group">
-        <h1 className="font-mono text-[17px] font-bold text-primary tracking-tight group-hover:opacity-80 transition-opacity">
-          FASTENER CALC
-        </h1>
-        <p className="text-[9px] font-mono text-on-surface-variant/50 tracking-widest uppercase mt-0.5">
-          Shigley 9ª · Norton 4ª
-        </p>
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome, onOpenManual, collapsed, onToggleCollapsed }) => (
+  <aside className={[
+    'fixed left-0 top-0 h-full bg-surface-container-lowest border-r border-outline-variant z-50 hidden lg:flex flex-col transition-[width] duration-200',
+    collapsed ? 'w-16' : 'w-64',
+  ].join(' ')}>
+    {/* Logo + ocultar/mostrar */}
+    <div className={['border-b border-outline-variant flex items-start gap-2', collapsed ? 'p-3 justify-center' : 'p-5'].join(' ')}>
+      {!collapsed && (
+        <button onClick={onGoHome} className="text-left flex-1 min-w-0 group">
+          <h1 className="font-mono text-[17px] font-bold text-primary tracking-tight group-hover:opacity-80 transition-opacity">
+            FASTENER CALC
+          </h1>
+          <p className="text-[9px] font-mono text-on-surface-variant/50 tracking-widest uppercase mt-0.5">
+            Shigley 9ª · Norton 4ª
+          </p>
+        </button>
+      )}
+      <button
+        onClick={onToggleCollapsed}
+        aria-label={collapsed ? 'Mostrar barra lateral' : 'Ocultar barra lateral'}
+        aria-expanded={!collapsed}
+        title={collapsed ? 'Mostrar barra lateral' : 'Ocultar barra lateral'}
+        className="w-8 h-8 shrink-0 flex items-center justify-center rounded-sm text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-colors font-mono text-base"
+      >
+        {collapsed
+          ? <PanelLeftOpen size={18} strokeWidth={1.75} aria-hidden="true" />
+          : <PanelLeftClose size={18} strokeWidth={1.75} aria-hidden="true" />}
       </button>
     </div>
 
     {/* Nav */}
-    <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar" aria-label="Módulos">
-      <p className="px-3 pb-2 text-[9px] font-mono uppercase tracking-widest text-on-surface-variant/40">
-        Calculadoras
-      </p>
+    <nav className={['flex-1 py-4 space-y-1 overflow-y-auto custom-scrollbar', collapsed ? 'px-2' : 'px-3'].join(' ')} aria-label="Módulos">
+      {!collapsed && (
+        <p className="px-3 pb-2 text-[9px] font-mono uppercase tracking-widest text-on-surface-variant/40">
+          Calculadoras
+        </p>
+      )}
       {TABS.map(t => {
         const active = activeTab === t.id;
         return (
           <button
             key={t.id}
             onClick={() => onTabChange(t.id)}
+            title={collapsed ? t.label : undefined}
+            aria-label={collapsed ? t.label : undefined}
             className={[
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-left transition-all duration-200',
+              'w-full flex items-center gap-3 py-2.5 rounded-sm text-left transition-all duration-200',
+              collapsed ? 'justify-center px-0' : 'px-3',
               active
                 ? 'text-primary font-bold border-r-2 border-primary bg-surface-container-high'
                 : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface',
             ].join(' ')}
           >
-            <span className="text-base w-6 text-center select-none">{t.emoji}</span>
-            <div>
-              <div className="font-sans text-[12px] font-semibold leading-tight">{t.label}</div>
-              <div className="font-mono text-[9px] text-on-surface-variant/50 leading-tight mt-0.5">{t.ref}</div>
-            </div>
+            <span className="w-6 flex items-center justify-center select-none"><t.Icon size={18} strokeWidth={1.75} aria-hidden="true" /></span>
+            {!collapsed && (
+              <div>
+                <div className="font-sans text-[12px] font-semibold leading-tight">{t.label}</div>
+                <div className="font-mono text-[9px] text-on-surface-variant/50 leading-tight mt-0.5">{t.ref}</div>
+              </div>
+            )}
           </button>
         );
       })}
@@ -67,17 +96,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome, onO
     <div className="p-3 border-t border-outline-variant space-y-0.5">
       <button
         onClick={onOpenManual}
-        className="w-full flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all"
+        title={collapsed ? 'Manual de uso' : undefined}
+        aria-label={collapsed ? 'Manual de uso' : undefined}
+        className={['w-full flex items-center gap-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all', collapsed ? 'justify-center' : 'px-3'].join(' ')}
       >
-        <span className="text-sm">📖</span>
-        <span className="font-mono text-[10px] uppercase tracking-widest">Manual de uso</span>
+        <BookOpen size={18} strokeWidth={1.75} aria-hidden="true" />
+        {!collapsed && <span className="font-mono text-[10px] uppercase tracking-widest">Manual de uso</span>}
       </button>
       <button
         onClick={onGoHome}
-        className="w-full flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all"
+        title={collapsed ? 'Inicio' : undefined}
+        aria-label={collapsed ? 'Inicio' : undefined}
+        className={['w-full flex items-center gap-3 py-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-sm transition-all', collapsed ? 'justify-center' : 'px-3'].join(' ')}
       >
-        <span className="text-sm">🏠</span>
-        <span className="font-mono text-[10px] uppercase tracking-widest">Inicio</span>
+        <House size={18} strokeWidth={1.75} aria-hidden="true" />
+        {!collapsed && <span className="font-mono text-[10px] uppercase tracking-widest">Inicio</span>}
       </button>
     </div>
   </aside>
@@ -85,6 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onGoHome, onO
 
 // ── Top bar ───────────────────────────────────────────────────────────────────
 interface TopBarProps {
+  sidebarCollapsed: boolean;
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   onGoHome: () => void;
@@ -93,14 +127,14 @@ interface TopBarProps {
   onSetImperial: () => void;
 }
 const TopBar: React.FC<TopBarProps> = ({
-  activeTab, onTabChange, onGoHome, isImperial, onSetSI, onSetImperial
+  sidebarCollapsed, activeTab, onTabChange, onGoHome, isImperial, onSetSI, onSetImperial
 }) => {
   const cfg = TABS.find(t => t.id === activeTab)!;
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
-    <header className="fixed top-0 right-0 w-full lg:w-[calc(100%-16rem)] h-14 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4 lg:px-6 z-40">
+    <header className={`fixed top-0 right-0 w-full ${sidebarCollapsed ? 'lg:w-[calc(100%-4rem)]' : 'lg:w-[calc(100%-16rem)]'} transition-[width] duration-200 h-14 bg-surface-container-low border-b border-outline-variant flex items-center justify-between px-4 lg:px-6 z-40`}>
       {/* Left */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Mobile back */}
@@ -155,7 +189,9 @@ const TopBar: React.FC<TopBarProps> = ({
           className="w-8 h-8 flex items-center justify-center rounded transition-all text-on-surface-variant hover:text-primary hover:bg-surface-variant text-base"
           aria-label="Cambiar tema"
         >
-          {isDark ? '☀️' : '🌙'}
+          {isDark
+            ? <Sun size={18} strokeWidth={1.75} aria-hidden="true" />
+            : <Moon size={18} strokeWidth={1.75} aria-hidden="true" />}
         </button>
 
         {/* Solver status */}
@@ -172,6 +208,13 @@ const TopBar: React.FC<TopBarProps> = ({
 const AppInner: React.FC = () => {
   const [view, setView] = useState<'home' | 'calculator'>('home');
   const [manualOpen, setManualOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try { return localStorage.getItem('fc-sidebar-collapsed') === '1'; } catch { return false; }
+  });
+  const toggleSidebar = () => setSidebarCollapsed(c => {
+    try { localStorage.setItem('fc-sidebar-collapsed', c ? '0' : '1'); } catch { /* sin almacenamiento */ }
+    return !c;
+  });
   const { state, setActiveTab, setUnitSystem } = useCalculator();
   const isImperial = state.unitSystem === 'imperial';
 
@@ -200,12 +243,15 @@ const AppInner: React.FC = () => {
         onTabChange={setActiveTab}
         onGoHome={() => setView('home')}
         onOpenManual={() => setManualOpen(true)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={toggleSidebar}
       />
 
       {/* ── Content area ── */}
-      <div className="flex flex-col flex-1 lg:ml-64 min-w-0">
+      <div className={`flex flex-col flex-1 min-w-0 transition-[margin] duration-200 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
 
         <TopBar
+          sidebarCollapsed={sidebarCollapsed}
           activeTab={state.activeTab}
           onTabChange={setActiveTab}
           onGoHome={() => setView('home')}
@@ -214,7 +260,14 @@ const AppInner: React.FC = () => {
           onSetImperial={() => setUnitSystem('imperial')}
         />
 
-        {/* Two-column workspace */}
+        {state.activeTab === 'power' ? (
+        <main className="flex-1 overflow-hidden mt-14 min-h-0">
+          <Suspense fallback={<div className="p-4 text-sm font-mono">Cargando…</div>}>
+            <PowerScrewWorkspace system={state.unitSystem} />
+          </Suspense>
+        </main>
+        ) : (
+        /* Two-column workspace */
         <main className="flex flex-1 overflow-hidden mt-14">
 
           {/* Left: Input panel */}
@@ -243,6 +296,7 @@ const AppInner: React.FC = () => {
             </div>
           </div>
         </main>
+        )}
 
         {/* Footer */}
         <footer className="shrink-0 text-center text-[9px] font-mono text-on-surface-variant/35 py-2 border-t border-outline-variant">

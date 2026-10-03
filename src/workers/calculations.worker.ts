@@ -1,14 +1,10 @@
-import { PowerScrewCalculator }   from '@/modules/powerScrew/calculations';
 import { TensionJointCalculator } from '@/modules/tensionJoint/calculations';
 import { ShearJointCalculator }   from '@/modules/shearJoint/calculations';
-import { sweepPowerScrew }        from '@/modules/powerScrew/design';
 import { sweepShearJoint }        from '@/modules/shearJoint/design';
 
 type MessageType =
-  | 'POWER_SCREW_CALCULATE'
   | 'TENSION_JOINT_CALCULATE'
   | 'SHEAR_JOINT_CALCULATE'
-  | 'POWER_SCREW_SWEEP'
   | 'SHEAR_JOINT_SWEEP';
 
 self.onmessage = (event: MessageEvent<{ type: MessageType; payload: any; tab: string }>) => {
@@ -17,21 +13,11 @@ self.onmessage = (event: MessageEvent<{ type: MessageType; payload: any; tab: st
     let results: any;
     let kind: 'single' | 'sweep' = 'single';
     switch (type) {
-      case 'POWER_SCREW_CALCULATE':
-        results = new PowerScrewCalculator(payload).calculate();
-        break;
       case 'TENSION_JOINT_CALCULATE':
         results = new TensionJointCalculator(payload).calculate();
         break;
       case 'SHEAR_JOINT_CALCULATE':
         results = new ShearJointCalculator(payload).calculate();
-        break;
-      case 'POWER_SCREW_SWEEP':
-        results = sweepPowerScrew(
-          payload.base, payload.threads, payload.materials,
-          payload.targetN, payload.threadStandard,
-        );
-        kind = 'sweep';
         break;
       case 'SHEAR_JOINT_SWEEP':
         results = sweepShearJoint(

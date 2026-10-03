@@ -1,21 +1,17 @@
 import React, { useMemo } from 'react';
-
-// KaTeX se carga desde CDN en index.html; usamos la variable global
-declare const katex: {
-  renderToString: (tex: string, opts?: object) => string;
-};
+import katex from 'katex';
 
 const formulaCache = new Map<string, string>();
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function renderFormula(latex: string): string {
   if (!formulaCache.has(latex)) {
     try {
-      const html = typeof katex !== 'undefined'
-        ? katex.renderToString(latex, { throwOnError: false, displayMode: false })
-        : `<code>${latex}</code>`;
-      formulaCache.set(latex, html);
+      formulaCache.set(latex, katex.renderToString(latex, { throwOnError: false, displayMode: false }));
     } catch {
-      formulaCache.set(latex, `<code>${latex}</code>`);
+      formulaCache.set(latex, `<code>${escapeHtml(latex)}</code>`);
     }
   }
   return formulaCache.get(latex)!;

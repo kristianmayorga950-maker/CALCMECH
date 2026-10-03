@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
-import type { PowerScrewInput, PowerScrewResults } from '@/modules/powerScrew/types';
 import type { TensionJointInput, TensionJointResults } from '@/modules/tensionJoint/types';
 import type { ShearJointInput, ShearJointResults }   from '@/modules/shearJoint/types';
 import { loadThreadTables, getAllThreads } from '@/utils/threadTables';
-import { loadMaterialTables, getAllISOClasses, getAllSAEGrades, POWER_SCREW_MATERIALS } from '@/utils/materialDatabase';
-import type { PowerScrewSweepResult } from '@/modules/powerScrew/design';
+import { loadMaterialTables, getAllISOClasses, getAllSAEGrades } from '@/utils/materialDatabase';
 import type { ShearJointSweepResult, ShearAreaMode } from '@/modules/shearJoint/design';
 
+/** 'power' se resuelve en src/features/powerScrew (estado y motor propios); aquí solo tensión y cortante. */
 export type ActiveTab = 'power' | 'tension' | 'shear';
 
 /** Factores de seguridad objetivo para comparar con el resultado del diseño. */
@@ -32,20 +31,17 @@ interface CalculatorState {
   error:          string | null;
   tablesLoaded:   boolean;
 
-  powerInputs:   Partial<PowerScrewInput>;
   tensionInputs: Partial<TensionJointInput>;
   shearInputs:   Partial<ShearJointInput>;
 
-  powerResults?:   PowerScrewResults;
   tensionResults?: TensionJointResults;
   shearResults?:   ShearJointResults;
 
   /** Modo "Diseño automático" (barrido iterativo) activo por pestaña. */
-  autoMode: { power: boolean; shear: boolean };
+  autoMode: { shear: boolean };
   /** Opciones del barrido configurables desde la UI. */
   sweepOptions: { shearStandard: 'iso' | 'unc'; shearAreaMode: ShearAreaMode };
   /** Resultados del barrido iterativo. */
-  powerSweep?: PowerScrewSweepResult;
   shearSweep?: ShearJointSweepResult;
 
   /** Factores de seguridad objetivo que el usuario puede ajustar. */
@@ -60,12 +56,11 @@ type Action =
   | { type: 'SET_LOADING';     loading: boolean }
   | { type: 'SET_ERROR';       error: string | null }
   | { type: 'TABLES_LOADED' }
-  | { type: 'UPDATE_POWER';    inputs: Partial<PowerScrewInput> }
   | { type: 'UPDATE_TENSION';  inputs: Partial<TensionJointInput> }
   | { type: 'UPDATE_SHEAR';    inputs: Partial<ShearJointInput> }
   | { type: 'SET_RESULTS';     tab: ActiveTab; results: any }
-  | { type: 'SET_SWEEP';       tab: 'power' | 'shear'; sweep: any }
-  | { type: 'SET_AUTO_MODE';   tab: 'power' | 'shear'; on: boolean }
+  | { type: 'SET_SWEEP';       tab: 'shear'; sweep: any }
+  | { type: 'SET_AUTO_MODE';   tab: 'shear'; on: boolean }
   | { type: 'SET_SWEEP_OPTIONS'; options: Partial<CalculatorState['sweepOptions']> }
   | { type: 'SET_VALIDATION';  errors: CalculatorState['validationErrors'] }
   | { type: 'SET_TARGETS';     targets: Partial<TargetSafetyFactors> }
@@ -77,20 +72,6 @@ const defaultState: CalculatorState = {
   loading:      false,
   error:        null,
   tablesLoaded: false,
-
-  powerInputs: {
-    threadType:         'acme',
-    majorDiameter:      32,
-    pitch:              4,
-    numberOfStarts:     2,
-    axialLoad:          6400,
-    frictionCoefficient: 0.08,
-    hasCollar:          true,
-    collarDiameter:     40,
-    collarFriction:     0.08,
-    engagedThreads:     2,
-    unitSystem:         'SI',
-  },
 
   tensionInputs: {
     boltDiameter:           12,
@@ -139,7 +120,7 @@ const defaultState: CalculatorState = {
     unitSystem:     'SI',
   },
 
-  autoMode:     { power: false, shear: false },
+  autoMode:     { shear: false },
   sweepOptions: { shearStandard: 'iso', shearAreaMode: 'thread' },
 
   targetSafetyFactors: {
@@ -161,7 +142,6 @@ function reducer(state: CalculatorState, action: Action): CalculatorState {
     case 'SET_LOADING':    return { ...state, loading: action.loading };
     case 'SET_ERROR':      return { ...state, error: action.error, loading: false };
     case 'TABLES_LOADED':  return { ...state, tablesLoaded: true };
-    case 'UPDATE_POWER':   return { ...state, powerInputs:   { ...state.powerInputs,   ...action.inputs } };
     case 'UPDATE_TENSION': return { ...state, tensionInputs: { ...state.tensionInputs, ...action.inputs } };
     case 'UPDATE_SHEAR':   return { ...state, shearInputs:   { ...state.shearInputs,   ...action.inputs } };
     case 'SET_RESULTS':
@@ -169,7 +149,6 @@ function reducer(state: CalculatorState, action: Action): CalculatorState {
         ...state,
         loading: false,
         error:   null,
-        powerResults:   action.tab === 'power'   ? action.results : state.powerResults,
         tensionResults: action.tab === 'tension' ? action.results : state.tensionResults,
         shearResults:   action.tab === 'shear'   ? action.results : state.shearResults,
       };
@@ -178,7 +157,6 @@ function reducer(state: CalculatorState, action: Action): CalculatorState {
         ...state,
         loading: false,
         error:   null,
-        powerSweep: action.tab === 'power' ? action.sweep : state.powerSweep,
         shearSweep: action.tab === 'shear' ? action.sweep : state.shearSweep,
       };
     case 'SET_AUTO_MODE':
@@ -198,7 +176,7 @@ interface CalculatorContextType {
   setUnitSystem:(system: 'SI' | 'imperial') => void;
   updateInputs: (inputs: any) => void;
   setTargets:   (targets: Partial<TargetSafetyFactors>) => void;
-  setAutoMode:  (tab: 'power' | 'shear', on: boolean) => void;
+  setAutoMode:  (tab: 'shear', on: boolean) => void;
   setSweepOptions: (options: Partial<CalculatorState['sweepOptions']>) => void;
   calculate:    () => void;
   reset:        () => void;
@@ -244,7 +222,6 @@ export const CalculatorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const setUnitSystem = (system: 'SI' | 'imperial') => dispatch({ type: 'SET_UNIT', system });
 
   const updateInputs = (inputs: any) => {
-    if (state.activeTab === 'power')   dispatch({ type: 'UPDATE_POWER',   inputs });
     if (state.activeTab === 'tension') dispatch({ type: 'UPDATE_TENSION', inputs });
     if (state.activeTab === 'shear')   dispatch({ type: 'UPDATE_SHEAR',   inputs });
   };
@@ -257,26 +234,7 @@ export const CalculatorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const tab = state.activeTab;
     const w = workerRef.current;
 
-    if (tab === 'power') {
-      if (state.autoMode.power) {
-        // Barrido cuerda × material — usa la tabla Acme estándar y los materiales del tornillo.
-        const { majorDiameter, pitch, material, ...base } = state.powerInputs as any;
-        const materials = POWER_SCREW_MATERIALS.filter(m => m.name !== 'Personalizado' && m.Sy > 0);
-        w.postMessage({
-          type: 'POWER_SCREW_SWEEP',
-          payload: {
-            base,
-            threads:        getAllThreads('acme'),
-            materials,
-            targetN:        state.targetSafetyFactors.nYield,
-            threadStandard: 'acme',
-          },
-          tab,
-        });
-      } else {
-        w.postMessage({ type: 'POWER_SCREW_CALCULATE', payload: state.powerInputs, tab });
-      }
-    } else if (tab === 'tension') {
+    if (tab === 'tension') {
       w.postMessage({ type: 'TENSION_JOINT_CALCULATE', payload: state.tensionInputs, tab });
     } else if (tab === 'shear') {
       if (state.autoMode.shear) {
@@ -303,7 +261,7 @@ export const CalculatorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const setTargets = (targets: Partial<TargetSafetyFactors>) => dispatch({ type: 'SET_TARGETS', targets });
-  const setAutoMode = (tab: 'power' | 'shear', on: boolean) => dispatch({ type: 'SET_AUTO_MODE', tab, on });
+  const setAutoMode = (tab: 'shear', on: boolean) => dispatch({ type: 'SET_AUTO_MODE', tab, on });
   const setSweepOptions = (options: Partial<CalculatorState['sweepOptions']>) =>
     dispatch({ type: 'SET_SWEEP_OPTIONS', options });
   const reset = () => dispatch({ type: 'RESET' });

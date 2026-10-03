@@ -16,7 +16,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'power-screw':   ['./src/modules/powerScrew/calculations'],
+          'power-screw':   ['./src/features/powerScrew/engine/index.ts'],
           'tension-joint': ['./src/modules/tensionJoint/calculations'],
           'shear-joint':   ['./src/modules/shearJoint/calculations'],
           'vendor-charts': ['recharts'],

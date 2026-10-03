@@ -1,4 +1,5 @@
 import React from 'react';
+import { Loader2, Zap, X } from 'lucide-react';
 import { useCalculator } from '@/context/CalculatorContext';
 import { UnitInput } from '@/components/common/UnitInput';
 import { CollapsibleSection } from '@/components/common/CollapsibleSection';
@@ -129,7 +130,7 @@ export const ShearJointInputForm: React.FC = () => {
                 disabled={bolts.length <= 1}
                 className="text-xs px-2 py-2 rounded text-red-400 hover:bg-red-500/10 disabled:opacity-30"
               >
-                ✕
+                <X size={14} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
           ))}
@@ -304,7 +305,7 @@ export const ShearJointInputForm: React.FC = () => {
         onClick={calculate}
         disabled={state.loading}
       >
-        {state.loading ? '⏳ Calculando…' : '⚡ CALCULAR'}
+        {state.loading ? <><Loader2 size={14} strokeWidth={1.75} className="inline-block align-[-2px] animate-spin" aria-hidden="true" /> Calculando…</> : <><Zap size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> CALCULAR</>}
       </button>
     </div>
   );

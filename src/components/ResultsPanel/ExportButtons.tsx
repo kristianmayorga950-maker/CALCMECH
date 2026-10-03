@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface Props { results: any; moduleType: 'power' | 'tension' | 'shear'; }
+interface Props { results: any; moduleType: 'tension' | 'shear'; }
 
 function toCSV(results: any): string {
   const calcs = results.calculations ?? {};

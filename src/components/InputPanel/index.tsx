@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TriangleAlert, X } from 'lucide-react';
 import { useCalculator } from '@/context/CalculatorContext';
-import { PowerScrewInputForm }   from './PowerScrewInputForm';
 import { TensionJointInputForm } from './TensionJointInputForm';
 import { ShearJointInputForm }   from './ShearJointInputForm';
 
@@ -24,14 +24,14 @@ const ErrorBanner: React.FC<{ error: string; onDismiss: () => void }> = ({ error
       color: 'var(--c-invalid-txt)',
     }}
   >
-    <span className="shrink-0 mt-0.5">⚠</span>
+    <TriangleAlert size={16} strokeWidth={1.75} className="shrink-0 mt-0.5" aria-hidden="true" />
     <span className="flex-1 leading-snug">{cleanError(error)}</span>
     <button
       onClick={onDismiss}
       className="shrink-0 ml-1 opacity-60 hover:opacity-100 transition-opacity text-base leading-none"
       aria-label="Cerrar"
     >
-      ✕
+      <X size={16} strokeWidth={1.75} aria-hidden="true" />
     </button>
   </div>
 );
@@ -70,7 +70,6 @@ export const InputPanel: React.FC = () => {
       {state.error && !dismissed && (
         <ErrorBanner error={state.error} onDismiss={() => setDismissed(true)} />
       )}
-      {state.activeTab === 'power'   && <PowerScrewInputForm />}
       {state.activeTab === 'tension' && <TensionJointInputForm />}
       {state.activeTab === 'shear'   && <ShearJointInputForm />}
     </div>

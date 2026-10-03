@@ -1,10 +1,9 @@
 import React from 'react';
-import type { PowerScrewSweepResult } from '@/modules/powerScrew/design';
+import { CircleCheck, TriangleAlert, Star } from 'lucide-react';
 import type { ShearJointSweepResult } from '@/modules/shearJoint/design';
 
 interface Props {
-  sweep:      PowerScrewSweepResult | ShearJointSweepResult;
-  moduleType: 'power' | 'shear';
+  sweep: ShearJointSweepResult;
 }
 
 const HeaderNote: React.FC<{ sweep: Props['sweep'] }> = ({ sweep }) => {
@@ -17,61 +16,17 @@ const HeaderNote: React.FC<{ sweep: Props['sweep'] }> = ({ sweep }) => {
       </p>
       {rec ? (
         <p className="text-sm font-semibold mt-1" style={{ color: 'var(--c-primary)' }}>
-          ✅ Recomendado: {rec}
+          <CircleCheck size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Recomendado: {rec}
         </p>
       ) : (
         <p className="text-sm font-semibold mt-1 text-red-500">
-          ⚠ Ninguna combinación alcanza n ≥ {sweep.targetN.toFixed(2)} — aumente tamaños, baje la carga
+          <TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Ninguna combinación alcanza n ≥ {sweep.targetN.toFixed(2)} — aumente tamaños, baje la carga
           o el factor objetivo.
         </p>
       )}
     </div>
   );
 };
-
-const PowerTable: React.FC<{ sweep: PowerScrewSweepResult }> = ({ sweep }) => (
-  <table className="w-full text-xs">
-    <thead>
-      <tr className="text-[10px] uppercase tracking-wider border-b" style={{ color: 'var(--c-text-dim)', borderColor: 'var(--c-border)' }}>
-        <th className="text-left  py-1 pr-2">Cuerda</th>
-        <th className="text-left  py-1 pr-2">Material</th>
-        <th className="text-right py-1 pr-2">d (mm)</th>
-        <th className="text-right py-1 pr-2">T (N·m)</th>
-        <th className="text-right py-1 pr-2">η (%)</th>
-        <th className="text-right py-1 pr-2">Autobloq.</th>
-        <th className="text-right py-1">n (Sy/σ′)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {sweep.candidates.map((c) => {
-        const isRec = c.key === sweep.recommendedKey;
-        return (
-          <tr
-            key={c.key}
-            className="border-b"
-            style={{
-              borderColor: 'var(--c-border)',
-              background: isRec ? 'var(--c-valid-bg, rgba(16,185,129,0.12))' : undefined,
-              opacity: c.viable ? 1 : 0.5,
-            }}
-          >
-            <td className="py-1 pr-2 font-medium" style={{ color: 'var(--c-text)' }}>
-              {isRec && '★ '}{c.nominal}
-            </td>
-            <td className="py-1 pr-2" style={{ color: 'var(--c-text-muted)' }}>{c.materialName}</td>
-            <td className="py-1 pr-2 text-right font-mono" style={{ color: 'var(--c-text-muted)' }}>{c.dM.toFixed(2)}</td>
-            <td className="py-1 pr-2 text-right font-mono" style={{ color: 'var(--c-text-muted)' }}>{c.TtotalNm.toFixed(2)}</td>
-            <td className="py-1 pr-2 text-right font-mono" style={{ color: 'var(--c-text-muted)' }}>{c.efficiencyPercent.toFixed(1)}</td>
-            <td className="py-1 pr-2 text-right">{c.selfLocking ? '✅' : '⚠️'}</td>
-            <td className="py-1 text-right font-mono font-semibold" style={{ color: c.viable ? 'var(--c-primary)' : 'var(--c-text-dim)' }}>
-              {c.n.toFixed(2)}
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-);
 
 const ShearTable: React.FC<{ sweep: ShearJointSweepResult }> = ({ sweep }) => (
   <table className="w-full text-xs">
@@ -100,7 +55,7 @@ const ShearTable: React.FC<{ sweep: ShearJointSweepResult }> = ({ sweep }) => (
             }}
           >
             <td className="py-1 pr-2 font-medium" style={{ color: 'var(--c-text)' }}>
-              {isRec && '★ '}{c.nominal}
+              {isRec && <><Star size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> </>}{c.nominal}
             </td>
             <td className="py-1 pr-2" style={{ color: 'var(--c-text-muted)' }}>{c.gradeName}</td>
             <td className="py-1 pr-2 text-right font-mono" style={{ color: 'var(--c-text-muted)' }}>{c.dM.toFixed(2)}</td>
@@ -117,7 +72,7 @@ const ShearTable: React.FC<{ sweep: ShearJointSweepResult }> = ({ sweep }) => (
   </table>
 );
 
-export const DesignSweepTable: React.FC<Props> = ({ sweep, moduleType }) => {
+export const DesignSweepTable: React.FC<Props> = ({ sweep }) => {
   if (!sweep || sweep.candidates.length === 0) {
     return <p className="text-sm" style={{ color: 'var(--c-text-muted)' }}>Sin candidatos para barrer.</p>;
   }
@@ -125,9 +80,7 @@ export const DesignSweepTable: React.FC<Props> = ({ sweep, moduleType }) => {
     <div>
       <HeaderNote sweep={sweep} />
       <div className="overflow-x-auto">
-        {moduleType === 'power'
-          ? <PowerTable sweep={sweep as PowerScrewSweepResult} />
-          : <ShearTable sweep={sweep as ShearJointSweepResult} />}
+        <ShearTable sweep={sweep} />
       </div>
     </div>
   );

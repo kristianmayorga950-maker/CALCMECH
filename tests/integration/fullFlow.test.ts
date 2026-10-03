@@ -1,44 +1,33 @@
 /**
  * Flujo completo de los tres calculadores — Shigley 9ª ed., Cap. 8.
  *
- * Verifica que cada clase devuelve un objeto con todas las secciones que la
- * UI (ResultsPanel) consume: geometría/áreas, esfuerzos/torques, indicadores,
- * recomendaciones, warnings y el mapa `calculations` con referencias.
+ * Juntas: cada clase devuelve las secciones que consume ResultsPanel.
+ * Tornillo de potencia: el motor progresivo (src/features/powerScrew) entrega
+ * pasos, verificaciones y resultados completos con datos suficientes.
  */
 
 import { describe, it, expect } from 'vitest';
-import { PowerScrewCalculator }   from '@/modules/powerScrew/calculations';
+import { ENGINE, DEFAULT_CONFIG, solve } from '@/features/powerScrew/engine';
 import { TensionJointCalculator } from '@/modules/tensionJoint/calculations';
 import { ShearJointCalculator }   from '@/modules/shearJoint/calculations';
-import type { PowerScrewInput }   from '@/modules/powerScrew/types';
 import type { TensionJointInput } from '@/modules/tensionJoint/types';
 import type { ShearJointInput }   from '@/modules/shearJoint/types';
 
-describe('Power screw — §8-1/§8-2', () => {
-  const input: PowerScrewInput = {
-    threadType:          'acme',
-    majorDiameter:       32,
-    pitch:               4,
-    numberOfStarts:      2,
-    axialLoad:           6400,
-    frictionCoefficient: 0.08,
-    hasCollar:           true,
-    collarDiameter:      40,
-    collarFriction:      0.08,
-    engagedThreads:      2,
-    material:            { name: '1040 HR', Sy: 290, Sut: 520, E: 207 },
-    unitSystem:          'SI',
-  };
-
-  it('devuelve el shape que consume la UI', () => {
-    const r = new PowerScrewCalculator(input).calculate();
-    expect(r.geometry.lead).toBe(8);
-    expect(r.torques.Ttotal).toBeGreaterThan(0);
-    expect(r.bodyStress.sigmaVonMises).toBeGreaterThan(0);
-    expect(r.threadStress.bearing).toBeGreaterThan(0);
-    expect(r.indicators.safetyFactorYield).toBeGreaterThan(0);
-    expect(r.recommendations.length).toBeGreaterThan(0);
-    expect(r.calculations.vm.unit).toBe('MPa');
+describe('Power screw — §8-1/§8-2 (motor progresivo)', () => {
+  it('con datos completos calcula todo y evalúa todas las verificaciones', () => {
+    const r = solve(ENGINE, { ...DEFAULT_CONFIG, thrust: 'collar' }, {
+      d: { value: 32, unit: 'mm' }, p: { value: 4, unit: 'mm' }, n: { value: 2, unit: 'count' },
+      F: { value: 6.4, unit: 'kN' }, f: { value: 0.08, unit: '1' }, fc: { value: 0.08, unit: '1' }, dc: { value: 40, unit: 'mm' },
+      Sy: { value: 290, unit: 'MPa' }, E: { value: 207, unit: 'GPa' }, nTarget: { value: 2, unit: '1' },
+      Lcol: { value: 300, unit: 'mm' }, C: { value: 1, unit: '1' }, nt: { value: 4, unit: 'count' }, pb: { value: 11, unit: 'MPa' },
+    });
+    expect(r.values.l).toBe(8);
+    expect(r.values.T).toBeGreaterThan(0);
+    expect(r.values.vm).toBeGreaterThan(0);
+    expect(r.issues).toEqual([]);
+    expect(r.blocked).toEqual([]);
+    expect(r.checks.filter(c => c.status === 'pending')).toEqual([]);
+    expect(r.steps.every(s => s.general.length > 0)).toBe(true);
   });
 });
 

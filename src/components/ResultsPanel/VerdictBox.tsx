@@ -1,9 +1,10 @@
 import React from 'react';
+import { CircleCheck, TriangleAlert, CircleX } from 'lucide-react';
 import { useCalculator } from '@/context/CalculatorContext';
 
 interface Props {
   results:    any;
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
   unitSystem: 'SI' | 'imperial';
 }
 
@@ -38,10 +39,7 @@ function buildFactors(moduleType: Props['moduleType'], results: any, t: any): Fa
     if (results.nNet != null) list.push({ label: 'n área neta', value: results.nNet, target: t.nShear });
     return list;
   }
-  // power
-  return [
-    { label: 'n (Von Mises)', value: results.indicators?.safetyFactorYield, target: t.nYield },
-  ];
+  return [];
 }
 
 /** Veredicto según ratio actual/objetivo del factor más crítico. */
@@ -81,16 +79,16 @@ export const VerdictBox: React.FC<Props> = ({ results, moduleType }) => {
   const { verdict, governing, minRatio, governingValue, governingTarget } = computeVerdict(factors);
 
   const cfg = {
-    valid:    { cls: 'verdict-valid',    icon: '✅', label: 'VÁLIDO' },
-    marginal: { cls: 'verdict-marginal', icon: '⚠️', label: 'MARGINAL' },
-    invalid:  { cls: 'verdict-invalid',  icon: '❌', label: 'INSUFICIENTE' },
+    valid:    { cls: 'verdict-valid',    Icon: CircleCheck, label: 'VÁLIDO' },
+    marginal: { cls: 'verdict-marginal', Icon: TriangleAlert, label: 'MARGINAL' },
+    invalid:  { cls: 'verdict-invalid',  Icon: CircleX, label: 'INSUFICIENTE' },
   }[verdict];
 
   return (
     <div className={`${cfg.cls} p-3 mb-0`}>
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold tracking-wide">
-          {cfg.icon} VEREDICTO — {cfg.label}
+          <cfg.Icon size={18} strokeWidth={1.75} className="inline-block align-[-3px]" aria-hidden="true" /> VEREDICTO — {cfg.label}
         </h2>
         <div className="text-right">
           <div className="text-[10px] text-slate-400 uppercase tracking-wider">Factor gobernante</div>
@@ -112,24 +110,12 @@ export const VerdictBox: React.FC<Props> = ({ results, moduleType }) => {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-2">
         {factors.map((f, i) => <FactorPill key={i} item={f} />)}
-        {moduleType === 'power' && results.indicators?.efficiencyPercent != null && (
-          <div className="bg-navy-900/40 rounded-md px-2 py-1 text-center">
-            <div className="text-[10px] text-slate-500 uppercase">Eficiencia</div>
-            <div className="text-xs font-bold font-mono text-blue-400">{results.indicators.efficiencyPercent.toFixed(1)}%</div>
-          </div>
-        )}
-        {moduleType === 'power' && results.indicators?.selfLocking != null && (
-          <div className="bg-navy-900/40 rounded-md px-2 py-1 text-center">
-            <div className="text-[10px] text-slate-500 uppercase">Autobloqueo</div>
-            <div className="text-xs font-bold">{results.indicators.selfLocking ? 'Sí ✅' : 'No ⚠️'}</div>
-          </div>
-        )}
       </div>
 
       {results.warnings?.length > 0 && (
         <div className="mt-2 pt-1.5 border-t border-current/20">
           <ul className="text-[11px] space-y-0.5 opacity-80">
-            {results.warnings.map((w: string, i: number) => <li key={i}>⚠️ {w}</li>)}
+            {results.warnings.map((w: string, i: number) => <li key={i}><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> {w}</li>)}
           </ul>
         </div>
       )}

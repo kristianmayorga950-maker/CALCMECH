@@ -1,4 +1,5 @@
 import React from 'react';
+import { CircleDot, Lock, Check, X, TriangleAlert } from 'lucide-react';
 import { FormulaDisplay } from '@/components/common/FormulaDisplay';
 import type { TensionJointResults } from '@/modules/tensionJoint/types';
 
@@ -45,7 +46,7 @@ export const GasketResultsSection: React.FC<Props> = ({ results, unitSystem }) =
           'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0',
           isUnconfined ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-emerald-100 text-emerald-700 border border-emerald-300',
         ].join(' ')}>
-          {isUnconfined ? '🟡 No confinado' : '🔒 Confinado'}
+          {isUnconfined ? <><CircleDot size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> No confinado</> : <><Lock size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Confinado</>}
         </span>
       </div>
 
@@ -78,7 +79,7 @@ export const GasketResultsSection: React.FC<Props> = ({ results, unitSystem }) =
             Estado del sello
           </span>
           <span className={`text-sm font-bold ${g.sealed ? 'text-emerald-700' : 'text-red-700'}`}>
-            {g.sealed ? '✓ SELLADO' : '✗ ABIERTO'}
+            {g.sealed ? <><Check size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> SELLADO</> : <><X size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> ABIERTO</>}
           </span>
           <span className="text-[10px] text-slate-500">p_g {g.sealed ? '≥' : '<'} 0</span>
         </div>
@@ -157,7 +158,7 @@ export const GasketResultsSection: React.FC<Props> = ({ results, unitSystem }) =
       {/* ── Advertencia si no está sellado ── */}
       {!g.sealed && (
         <div className="mt-3 rounded-lg border border-red-300 bg-red-50 px-3 py-2.5 text-sm text-red-700">
-          <strong>⚠ El empaque pierde contacto a n = {g.n}×P.</strong>{' '}
+          <strong><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> El empaque pierde contacto a n = {g.n}×P.</strong>{' '}
           p_g = {fmtP(g.p_g)} &lt; 0. Aumente la precarga F_i o reduzca la carga P.
         </div>
       )}
@@ -190,8 +191,8 @@ export const GasketResultsSection: React.FC<Props> = ({ results, unitSystem }) =
             spacingOK ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-amber-400 bg-amber-50 text-amber-800',
           ].join(' ')}>
             {spacingOK
-              ? `✓ c = ${fmtLen(sBolt)} ≤ s_máx = ${fmtLen(sMax)} — Condición Ec. 8-34 cumplida.`
-              : `⚠ c = ${fmtLen(sBolt)} > s_máx = ${fmtLen(sMax)} — Ec. 8-34 NO cumplida. Aumente N o reduzca D_b.`}
+              ? <><Check size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> c = {fmtLen(sBolt)} ≤ s_máx = {fmtLen(sMax)} — Condición Ec. 8-34 cumplida.</>
+              : <><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> c = {fmtLen(sBolt)} &gt; s_máx = {fmtLen(sMax)} — Ec. 8-34 NO cumplida. Aumente N o reduzca D_b.</>}
           </div>
         </div>
       )}

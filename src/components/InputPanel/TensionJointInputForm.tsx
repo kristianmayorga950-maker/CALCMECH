@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Loader2, Zap, Lock, CircleDot, Check, TriangleAlert } from 'lucide-react';
 import { useCalculator } from '@/context/CalculatorContext';
 import { UnitInput } from '@/components/common/UnitInput';
 import { CollapsibleSection } from '@/components/common/CollapsibleSection';
@@ -58,7 +59,7 @@ const MemberEField: React.FC<{
         onBlur={handleBlur}
       />
       {commaWarn
-        ? <p className="mt-1 text-xs text-amber-400 font-medium">⚠ Usa punto (.) como separador decimal, no coma (,).</p>
+        ? <p className="mt-1 text-xs text-amber-400 font-medium"><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Usa punto (.) como separador decimal, no coma (,).</p>
         : <p className="mt-1 text-[11px] text-slate-500 font-mono">{altText}</p>
       }
     </div>
@@ -502,7 +503,7 @@ export const TensionJointInputForm: React.FC = () => {
                     ))}
                   </div>
                   {result.warning && (
-                    <div className="px-3 py-1.5 border-t border-amber-300/40 bg-amber-50 text-[11px] text-amber-700">⚠ {result.warning}</div>
+                    <div className="px-3 py-1.5 border-t border-amber-300/40 bg-amber-50 text-[11px] text-amber-700"><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> {result.warning}</div>
                   )}
                 </div>
               ) : (
@@ -524,7 +525,7 @@ export const TensionJointInputForm: React.FC = () => {
             className={['flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200',
               kmMethod === 'cornwell' ? 'bg-orange-500 text-white border-orange-500' : 'bg-material-card text-slate-600 border-material-border hover:border-orange-400 hover:text-material-dark',
             ].join(' ')}>
-            ⚡ Cornwell FEA — recomendado
+            <Zap size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Cornwell FEA — recomendado
           </button>
           <button onClick={() => handleKmMethod('wileman')}
             className={['flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200',
@@ -547,8 +548,8 @@ export const TensionJointInputForm: React.FC = () => {
                 <span className="font-semibold text-orange-600">j = d/l =</span>
                 <span className="font-mono font-bold text-material-dark">{j_preview}</span>
                 {parseFloat(j_preview) < 0.10 || parseFloat(j_preview) > 2.00
-                  ? <span className="text-amber-600 font-medium">⚠ Fuera del rango [0.10, 2.00] de la Tabla 11-8</span>
-                  : <span className="text-emerald-600">✓ dentro del rango de la tabla</span>
+                  ? <span className="text-amber-600 font-medium"><TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Fuera del rango [0.10, 2.00] de la Tabla 11-8</span>
+                  : <span className="text-emerald-600"><Check size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> dentro del rango de la tabla</span>
                 }
               </div>
             )}
@@ -895,14 +896,14 @@ export const TensionJointInputForm: React.FC = () => {
                   className={['flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200',
                     gasketType === 'confined' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-material-card text-slate-600 border-material-border hover:border-emerald-400',
                   ].join(' ')}>
-                  🔒 Confinado
+                  <Lock size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> Confinado
                   <span className="block text-[10px] font-normal opacity-80">Metal-metal; empaque no altera km</span>
                 </button>
                 <button type="button" onClick={() => setGasketType('unconfined')}
                   className={['flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200',
                     gasketType === 'unconfined' ? 'bg-amber-500 text-white border-amber-500' : 'bg-material-card text-slate-600 border-material-border hover:border-amber-400',
                   ].join(' ')}>
-                  🟡 No confinado
+                  <CircleDot size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> No confinado
                   <span className="block text-[10px] font-normal opacity-80">kg en serie con km → C_eff</span>
                 </button>
               </div>
@@ -1046,7 +1047,7 @@ export const TensionJointInputForm: React.FC = () => {
                       <div className={['rounded-lg border px-3 py-2 text-sm font-medium',
                         s_bolt <= s_max ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-amber-400 bg-amber-50 text-amber-800',
                       ].join(' ')}>
-                        {s_bolt <= s_max ? '✓' : '⚠'}{' '}
+                        {s_bolt <= s_max ? <Check size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> : <TriangleAlert size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" />}{' '}
                         c = {toGD(s_bolt).toFixed(2)} {gu} {s_bolt <= s_max ? '≤' : '>'} s<sub>máx</sub> = {toGD(s_max).toFixed(2)} {gu}
                         {s_bolt <= s_max ? ' — Ec. 8-34 cumplida.' : ' — Ec. 8-34 NO cumplida.'}
                       </div>
@@ -1101,7 +1102,7 @@ export const TensionJointInputForm: React.FC = () => {
         onClick={calculate}
         disabled={state.loading}
       >
-        {state.loading ? '⏳ Calculando…' : '⚡ CALCULAR'}
+        {state.loading ? <><Loader2 size={14} strokeWidth={1.75} className="inline-block align-[-2px] animate-spin" aria-hidden="true" /> Calculando…</> : <><Zap size={14} strokeWidth={1.75} className="inline-block align-[-2px]" aria-hidden="true" /> CALCULAR</>}
       </button>
     </div>
   );

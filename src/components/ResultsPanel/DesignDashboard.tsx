@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Check, X } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
@@ -10,7 +11,7 @@ import { DashboardPDF } from './DashboardPDF';
 
 interface Props {
   results:    any;
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
   unitSystem: 'SI' | 'imperial';
 }
 
@@ -37,14 +38,14 @@ const SafetyGauge: React.FC<GaugeProps> = ({ label, value, target, delay = 0 }) 
   const pct = Math.round(ratio * 100);
   const color = value >= target ? '#2e7d32' : value >= target * 0.7 ? '#ef6c00' : '#c62828';
   const bgColor = value >= target ? 'bg-emerald-950/30' : value >= target * 0.7 ? 'bg-amber-950/30' : 'bg-red-950/30';
-  const icon = value >= target ? '✓' : '✗';
+  const ok = value >= target;
 
   return (
     <div className={`${bgColor} rounded-lg p-3 border border-slate-700/30 transition-all duration-700 hover:scale-[1.02] hover:shadow-lg`}
          style={{ opacity: animated ? 1 : 0, transform: animated ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.6s cubic-bezier(.4,0,.2,1)' }}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
-        <span className="text-lg font-bold" style={{ color }}>{icon}</span>
+        <span role="img" aria-label={ok ? 'cumple' : 'no cumple'} style={{ color }}>{ok ? <Check size={18} strokeWidth={1.75} aria-hidden="true" /> : <X size={18} strokeWidth={1.75} aria-hidden="true" />}</span>
       </div>
       <div className="flex items-end gap-2 mb-2">
         <span className="text-2xl font-bold font-mono" style={{ color }}>{value.toFixed(2)}</span>
@@ -173,7 +174,6 @@ export const DesignDashboard: React.FC<Props> = ({ results, moduleType, unitSyst
 
       {moduleType === 'tension' && <TensionDashboard results={results} targets={targets} unitSystem={unitSystem} fmtF={fmtF} fmtS={fmtS} />}
       {moduleType === 'shear'  && <ShearDashboard results={results} targets={targets} unitSystem={unitSystem} fmtF={fmtF} fmtS={fmtS} />}
-      {moduleType === 'power'  && <PowerDashboard results={results} targets={targets} unitSystem={unitSystem} />}
     </div>
   );
 };
@@ -391,88 +391,6 @@ const ShearDashboard: React.FC<{
                 <Bar dataKey="F_moment" name="F'' momento" stackId="a" fill="#ff9800" radius={[3,3,0,0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </SubSection>
-      )}
-    </>
-  );
-};
-
-/* ── Power Screw Dashboard ───────────────────────────────── */
-const PowerDashboard: React.FC<{
-  results: any; targets: TargetSafetyFactors; unitSystem: 'SI' | 'imperial';
-}> = ({ results, targets, unitSystem }) => {
-  const imp = unitSystem === 'imperial';
-  const i  = results.input;
-  const g  = results.geometry;
-  const ind = results.indicators;
-  const torques = results.torques;
-  const b = results.bodyStress;
-  const ts = results.threadStress;
-
-  const targetFields: Array<{ key: keyof TargetSafetyFactors; label: string }> = [
-    { key: 'nYield', label: 'n fluencia mín' },
-  ];
-
-  return (
-    <>
-      <TargetEditor targets={targets} fields={targetFields} />
-
-      <SubSection title="Factores clave">
-        <div className="grid grid-cols-2 gap-2.5">
-          <SafetyGauge label="Factor de seguridad (Von Mises)" value={ind?.safetyFactorYield ?? 0} target={targets.nYield} delay={0} />
-          <div className="bg-navy-800/40 rounded-lg p-3 border border-slate-700/30">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Eficiencia</div>
-            <div className="flex items-end gap-2 mb-2">
-              <span className="text-2xl font-bold font-mono text-blue-400">{ind?.efficiencyPercent?.toFixed(1)}%</span>
-            </div>
-            <div className="h-1.5 bg-navy-900 rounded-full overflow-hidden">
-              <div className="h-full rounded-full bg-blue-500 transition-all duration-1000"
-                   style={{ width: `${Math.min(ind?.efficiencyPercent ?? 0, 100)}%`, boxShadow: '0 0 8px #2196f380' }} />
-            </div>
-          </div>
-        </div>
-      </SubSection>
-
-      <SubSection title="Torques y autobloqueo">
-        <div className="grid grid-cols-4 gap-1.5">
-          <MetricCard accent label="Autobloqueo" value={ind?.selfLocking ? 'Sí' : 'No'} sub={ind?.selfLocking ? 'Seguro' : 'Requiere freno'} delay={50} />
-          <MetricCard accent label="T subida"    value={`${(torques?.TR / 1000).toFixed(2)} N·m`}    delay={100} />
-          <MetricCard accent label="T bajada"    value={`${(torques?.TL / 1000).toFixed(2)} N·m`}    delay={150} />
-          <MetricCard accent label="T total"     value={`${(torques?.Ttotal / 1000).toFixed(2)} N·m`} delay={200} />
-        </div>
-      </SubSection>
-
-      <SubSection title="Dimensiones del tornillo">
-        <div className="grid grid-cols-4 gap-1.5">
-          <MetricCard label="Diámetro mayor d"  value={fmtMm(g.d, imp)}  sub={i.threadType === 'acme' ? 'Acme' : 'Cuadrada'} delay={50} />
-          <MetricCard label="Diámetro medio dm" value={fmtMm(g.dm, imp)} delay={100} />
-          <MetricCard label="Diámetro menor dr" value={fmtMm(g.dr, imp)} delay={150} />
-          <MetricCard label="Paso p"            value={fmtMm(g.p, imp)}  delay={200} />
-          <MetricCard label="Avance L"          value={fmtMm(g.lead, imp)} sub={`n = ${i.numberOfStarts}`} delay={250} />
-          <MetricCard label="Ángulo λ"          value={`${g.leadAngleDeg.toFixed(2)}°`} delay={300} />
-          <MetricCard label="Filetes nt"        value={i.engagedThreads.toString()} delay={350} />
-          <MetricCard label="Carga axial F"     value={`${i.axialLoad.toFixed(0)} N`} delay={400} />
-        </div>
-      </SubSection>
-
-      <SubSection title="Esfuerzos">
-        <div className="grid grid-cols-3 gap-1.5">
-          <MetricCard label="σ axial cuerpo" value={`${b.sigmaAxial.toFixed(1)} MPa`}    delay={50} />
-          <MetricCard label="τ torsión"      value={`${b.tauTorsion.toFixed(1)} MPa`}    delay={100} />
-          <MetricCard label="σ' Von Mises"   value={`${b.sigmaVonMises.toFixed(1)} MPa`} delay={150} />
-          <MetricCard label="σ aplast. filete" value={`${ts.bearing.toFixed(1)} MPa`}    delay={200} />
-          <MetricCard label="σ flex. filete"   value={`${ts.bending.toFixed(1)} MPa`}    delay={250} />
-          <MetricCard label="τ cortante filete" value={`${ts.shear.toFixed(1)} MPa`}     delay={300} />
-        </div>
-      </SubSection>
-
-      {i.material && (
-        <SubSection title="Material">
-          <div className="grid grid-cols-3 gap-1.5">
-            <MetricCard label="Material" value={i.material.name} delay={50} />
-            <MetricCard label="Sy / Sut" value={`${i.material.Sy} / ${i.material.Sut} MPa`} delay={100} />
-            <MetricCard label="E"        value={`${i.material.E} GPa`} delay={150} />
           </div>
         </SubSection>
       )}

@@ -5,7 +5,7 @@ import { convertValueByUnit } from '@/utils/unitConverter';
 interface Props {
   results:    any;
   unitSystem: 'SI' | 'imperial';
-  moduleType: 'power' | 'tension' | 'shear';
+  moduleType: 'tension' | 'shear';
 }
 
 export const CalculationsSection: React.FC<Props> = ({ results, unitSystem }) => {

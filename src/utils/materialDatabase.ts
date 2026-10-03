@@ -69,12 +69,3 @@ export function getWilemanConstants(mat: WilemanConstants['material']): WilemanC
 export function getAllWilemanConstants(): WilemanConstants[] { return WILEMAN_CONSTANTS; }
 
 export function getTorqueFactors(): TorqueFactor[] { return TORQUE_FACTORS; }
-
-/** Materiales genéricos para el cuerpo del tornillo de potencia (§8-2, acero común). */
-export const POWER_SCREW_MATERIALS = [
-  { name: 'Acero suave (1020 HR)',    Sy: 210, Sut: 380, E: 207 },
-  { name: 'Acero medio (1040 HR)',    Sy: 290, Sut: 520, E: 207 },
-  { name: 'Acero endurecido (4140)',  Sy: 655, Sut: 895, E: 207 },
-  { name: 'Acero inoxidable (304)',   Sy: 207, Sut: 517, E: 193 },
-  { name: 'Personalizado',            Sy: 0,   Sut: 0,   E: 207 },
-];
